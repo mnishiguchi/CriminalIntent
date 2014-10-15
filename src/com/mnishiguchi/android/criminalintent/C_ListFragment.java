@@ -2,6 +2,7 @@ package com.mnishiguchi.android.criminalintent;
 
 import java.util.ArrayList;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
@@ -13,7 +14,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class CListFragment extends ListFragment
+public class C_ListFragment extends ListFragment
 {
 	/* STATIC */
 	private static final String TAG = "CListFragment";
@@ -41,12 +42,27 @@ public class CListFragment extends ListFragment
 		The default implementation of a ListFragment inflates a layout that
 		defines a full screen ListView. */
 	
+	/* onResume() is the safestplace to take action to update a fragment's view. */
+	@Override
+	public void onResume()
+	{
+		super.onResume();
+		
+		// Reload the list.
+		( (CrimeAdapter) getListAdapter() ).notifyDataSetChanged();
+	}
+	
 	@Override
 	public void onListItemClick(ListView lv, View v, int position, long id)
 	{
 		Crime crime = ( (CrimeAdapter) getListAdapter() ).getItem(position);
+		
 		Toast.makeText(getActivity(), crime.getTitle() + " was clicked", Toast.LENGTH_SHORT).show();
-		Log.d(TAG, crime.getTitle() + " was clicked");
+
+		// Start the CrimeActivity.
+		Intent i = new Intent(getActivity(), CrimeActivity.class);
+		i.putExtra(CrimeFragment.EXTRA_CRIME_ID, crime.getId() );  // UUID is a Serializable object.
+		startActivity(i);
 	}
 	
 	/**

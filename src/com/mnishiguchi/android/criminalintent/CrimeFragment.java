@@ -1,5 +1,7 @@
 package com.mnishiguchi.android.criminalintent;
 
+import java.util.UUID;
+
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
@@ -15,6 +17,9 @@ import android.widget.EditText;
 
 public class CrimeFragment extends Fragment
 {
+	/* STATIC */
+	public static final String EXTRA_CRIME_ID = "com.mnishiguchi.android.criminalintent.crime_id";
+	
 	/* INSTANCE VARIABLES */
 	private Crime mCrime;
 	
@@ -27,7 +32,12 @@ public class CrimeFragment extends Fragment
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		mCrime = new Crime();
+		
+		// Retrieve the arguments passed by the CrimeActivity.
+		UUID crimeId = (UUID) getArguments().getSerializable(EXTRA_CRIME_ID);
+		
+		// Fetch the Crime based on the crimeId
+		mCrime = CrimeLab.get(getActivity() ).getCrime(crimeId);
 	}
 	
 	/** Must be public because it'll be called by the hosting Activity. */
@@ -35,13 +45,17 @@ public class CrimeFragment extends Fragment
 	public View onCreateView(LayoutInflater inflater, ViewGroup parent,
 			Bundle savedInstanceState)
 	{
-		// Get reference to the UI components.
+		// Get reference to the layout.
 		View v = inflater.inflate(R.layout.fragment_crime, parent, false);
+		
+		// Get reference to the UI components.
 		mEtTitle = (EditText) v.findViewById(R.id.et_crime_title);
 		mBtnDate = (Button) v.findViewById(R.id.btn_crime_date);
 		mCbSolved = (CheckBox) v.findViewById(R.id.cb_crime_solved);
 		
-		// Listen for EditText changes.
+		/* mEtTitle settings */ 
+		
+		mEtTitle.setText(mCrime.getTitle() );
 		mEtTitle.addTextChangedListener(new TextWatcher() {
 			@Override
 			public void onTextChanged(CharSequence input, int start, int before, int count)
@@ -54,11 +68,14 @@ public class CrimeFragment extends Fragment
 			public void afterTextChanged(Editable s) { }
 		} );
 		
-		// Set the date on the mBtnDate.
+		/* mBtnDate settings */ 
+		
 		mBtnDate.setText(mCrime.getDate().toString() );
 		mBtnDate.setEnabled(false);
 		
-		// Listen for CheckBox changes.
+		/* mCbSolved settings */ 
+		
+		mCbSolved.setChecked(mCrime.isSolved() );
 		mCbSolved.setOnCheckedChangeListener( new OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
@@ -69,6 +86,26 @@ public class CrimeFragment extends Fragment
 		} );
 
 		return v;
+	}
+	
+	/**
+	 * Creates a new fragment instance and attaches the specified UUID 
+	 * as fragment's arguments.
+	 * @param crimeId a UUID
+	 * @return a new fragment instance with the specified UUID attached
+	 * as its arguments.
+	 */
+	public static CrimeFragment newInstance(UUID crimeId)
+	{
+		// Prepare arguments.
+		Bundle args = new Bundle();  // Contains key-value pairs.
+		args.putSerializable(EXTRA_CRIME_ID, crimeId);
+		
+		// Creates a fragment instance and sets its arguments.
+		CrimeFragment fragment = new CrimeFragment();
+		fragment.setArguments(args);
+		
+		return fragment;
 	}
 
 }  // end class
