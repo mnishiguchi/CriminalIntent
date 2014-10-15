@@ -31,7 +31,7 @@ public class C_ListFragment extends ListFragment
 		// Change what is displayed on the hosting activity's action bar.
 		getActivity().setTitle(R.string.crimes_title);
 		
-		// Get the CrimeLab singleton and then get the list of crimes.
+		// Get the list of crimes via the CrimeLab singleton.
 		mCrimes = CrimeLab.get(getActivity() ).getCrimes();
 		
 		CrimeAdapter adapter = new CrimeAdapter(mCrimes);
@@ -59,14 +59,14 @@ public class C_ListFragment extends ListFragment
 		
 		Toast.makeText(getActivity(), crime.getTitle() + " was clicked", Toast.LENGTH_SHORT).show();
 
-		// Start the CrimeActivity.
-		Intent i = new Intent(getActivity(), CrimeActivity.class);
+		// Start the PagerActivity.
+		Intent i = new Intent(getActivity(), PagerActivity.class);
 		i.putExtra(CrimeFragment.EXTRA_CRIME_ID, crime.getId() );  // UUID is a Serializable object.
 		startActivity(i);
 	}
 	
-	/**
-	 * A custom ArrayAdapter designed to display Crime-specific list items.
+	/** INNER CLASS
+	 * - A custom ArrayAdapter designed to display Crime-specific list items.
 	 */
 	private class CrimeAdapter extends ArrayAdapter<Crime>
 	{
@@ -76,7 +76,7 @@ public class C_ListFragment extends ListFragment
 		public CrimeAdapter(ArrayList<Crime> crimes)
 		{
 			// The superclass constructor
-			// (Set the arg[1] to 0 when a pre-defined layout is not used.)
+			// (Set the args[1] to 0 when a pre-defined layout is not used.)
 			super(getActivity(), 0, crimes);
 		}
 		
