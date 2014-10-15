@@ -20,6 +20,12 @@ public class Crime
 		// Set mDate to the current date.
 		mDate = new Date();
 	}
+	
+	@Override
+	public String toString()
+	{
+		return mTitle;
+	}
 
 	/* ACCESSOR METHODS */
 	public String getTitle()
