@@ -62,10 +62,11 @@ public class CrimeFragment extends Fragment
 			{
 				mCrime.setTitle(input.toString() );
 			}
-			@Override  // Unused
-			public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
-			@Override //  Unused
-			public void afterTextChanged(Editable s) { }
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) { }  // Unused
+			
+			@Override
+			public void afterTextChanged(Editable s) { }  // Unused
 		} );
 		
 		/* mBtnDate settings */ 
@@ -84,16 +85,14 @@ public class CrimeFragment extends Fragment
 				mCrime.setSolved(isChecked);
 			}
 		} );
-
+		// Return the layout.
 		return v;
 	}
 	
 	/**
-	 * Creates a new fragment instance and attaches the specified UUID 
-	 * as fragment's arguments.
+	 * Creates a new fragment instance and attaches the specified UUID as fragment's arguments.
 	 * @param crimeId a UUID
-	 * @return a new fragment instance with the specified UUID attached
-	 * as its arguments.
+	 * @return a new fragment instance with the specified UUID attached as its arguments.
 	 */
 	public static CrimeFragment newInstance(UUID crimeId)
 	{

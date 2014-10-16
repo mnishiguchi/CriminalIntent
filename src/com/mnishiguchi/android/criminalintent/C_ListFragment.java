@@ -55,11 +55,10 @@ public class C_ListFragment extends ListFragment
 	@Override
 	public void onListItemClick(ListView lv, View v, int position, long id)
 	{
+		// Get the selected item.
 		Crime crime = ( (CrimeAdapter) getListAdapter() ).getItem(position);
-		
-		Toast.makeText(getActivity(), crime.getTitle() + " was clicked", Toast.LENGTH_SHORT).show();
 
-		// Start the PagerActivity.
+		// Start the PagerActivity with the crime's UUID as an extra.
 		Intent i = new Intent(getActivity(), PagerActivity.class);
 		i.putExtra(CrimeFragment.EXTRA_CRIME_ID, crime.getId() );  // UUID is a Serializable object.
 		startActivity(i);

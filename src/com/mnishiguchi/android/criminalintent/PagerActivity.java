@@ -33,7 +33,7 @@ public class PagerActivity extends FragmentActivity
 		
 		setUpInitialPagerItem();
 		
-		setUpOnPageListener();
+		setUpEventListener();
 	}
 	
 	private void setUpPagerAdapter()
@@ -59,18 +59,24 @@ public class PagerActivity extends FragmentActivity
 		} );
 	}
 	
+	/**
+	 * Sets the initial page to the selected item on the ListFragment.
+	 */
 	private void setUpInitialPagerItem()
 	{
 		UUID crimeid = (UUID) getIntent()
 			.getSerializableExtra(CrimeFragment.EXTRA_CRIME_ID);
 		for (int i = 0; i < mCrimes.size(); i++)
 		{
-			mViewPager.setCurrentItem(i);
-			break;
+			if (mCrimes.get(i).getId().equals(crimeid) )
+			{
+				mViewPager.setCurrentItem(i);
+				break;
+			}
 		}
 	}
 	
-	private void setUpOnPageListener()
+	private void setUpEventListener()
 	{
 		mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 			@Override
@@ -88,7 +94,7 @@ public class PagerActivity extends FragmentActivity
 			public void onPageScrolled(int arg0, float arg1, int arg2) { }  // unused
 			
 			@Override
-			public void onPageScrollStateChanged(int arg0) { } // unused
+			public void onPageScrollStateChanged(int arg0) { }  // unused
 		} );
 	}
 }
