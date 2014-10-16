@@ -24,7 +24,7 @@ public class CrimeLab
 		mAppContext = appContext;
 		mCrimes = new ArrayList<Crime>();
 		
-		initFakeCrimes();
+		// initFakeCrimes();
 	}
 	
 	/**
@@ -63,6 +63,15 @@ public class CrimeLab
 			}
 		}
 		return null;
+	}
+	
+	/**
+	 * Adds a new crime to the ArrayList that stores all the crimes.
+	 * @param crime
+	 */
+	public void addCrime(Crime crime)
+	{
+		mCrimes.add(crime);
 	}
 	
 	/**
