@@ -30,20 +30,18 @@ public class CrimeFragment extends Fragment
 	private Button mBtnDate;
 	private CheckBox mCbSolved;
 	
-	/** Must be public because it'll be called by the hosting Activity. */
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
 		
-		// Retrieve the arguments passed by the CrimeActivity.
+		// Retrieve the arguments.
 		UUID crimeId = (UUID) getArguments().getSerializable(EXTRA_CRIME_ID);
 		
 		// Fetch the Crime based on the crimeId
 		mCrime = CrimeLab.get(getActivity() ).getCrime(crimeId);
 	}
 	
-	/** Must be public because it'll be called by the hosting Activity. */
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup parent,
 			Bundle savedInstanceState)
@@ -76,10 +74,12 @@ public class CrimeFragment extends Fragment
 			@Override
 			public void onClick(View v)
 			{
-				// Show a DatePickerFragment.
-				FragmentManager fm = getActivity().getSupportFragmentManager();
+				// Create a DatePickerFragment with the crime's date as an argument.
 				DatePickerFragment dialog =
 						DatePickerFragment.newInstance(mCrime.getDate() );
+				
+				// Show the DatePickerFragment.
+				FragmentManager fm = getActivity().getSupportFragmentManager();
 				dialog.show(fm, DIALOG_DATE);
 			}
 		} );
