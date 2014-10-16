@@ -4,8 +4,11 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.view.View;
@@ -45,6 +48,21 @@ public class DatePickerFragment extends DialogFragment
 	}
 	
 	/**
+	 * Sends data to the target fragment.
+	 * @param resultCode
+	 */
+	private void sendResult(int resultCode)
+	{
+		// Do nothing if there is no target fragment.
+		if (getTargetFragment() == null) return;
+		
+		// Send data to the target fragment.
+		Intent i = new Intent();
+		i.putExtra(EXTRA_DATE, mDate);  // Date is a Serializable object.
+		getTargetFragment().onActivityResult(CrimeFragment.REQUEST_DATE, resultCode, i);
+	}
+	
+	/**
 	 * Creates a new AlertDialog object and configure it.
 	 */
 	@Override
@@ -77,12 +95,20 @@ public class DatePickerFragment extends DialogFragment
 				getArguments().putSerializable(EXTRA_DATE, mDate);
 			}
 		} );
-		
+
 		// Configure it and return it.
 		return new AlertDialog.Builder(getActivity() )
 						.setView(v)
 						.setTitle(R.string.date_picker_title)
-						.setPositiveButton(android.R.string.ok, null)
+						.setPositiveButton(
+								android.R.string.ok,
+								new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int which)
+									{
+										sendResult(Activity.RESULT_OK);
+									}
+								} )
 						.create();
 	}
 	

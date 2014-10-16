@@ -1,7 +1,10 @@
 package com.mnishiguchi.android.criminalintent;
 
+import java.util.Date;
 import java.util.UUID;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -22,13 +25,32 @@ public class CrimeFragment extends Fragment
 	/* STATIC */
 	public static final String EXTRA_CRIME_ID = "com.mnishiguchi.android.criminalintent.crime_id";
 	public static final String DIALOG_DATE = "date";
+	public static final int REQUEST_DATE = 0;
 	
 	/* INSTANCE VARIABLES */
-	private Crime mCrime;
+	private Crime mCrime;  // Reference to the data stored in CrimeLab(model layer)
 	
 	private EditText mEtTitle;
 	private Button mBtnDate;
 	private CheckBox mCbSolved;
+	
+	/**
+	 * Creates a new fragment instance and attaches the specified UUID as fragment's arguments.
+	 * @param crimeId a UUID
+	 * @return a new fragment instance with the specified UUID attached as its arguments.
+	 */
+	public static CrimeFragment newInstance(UUID crimeId)
+	{
+		// Prepare arguments.
+		Bundle args = new Bundle();  // Contains key-value pairs.
+		args.putSerializable(EXTRA_CRIME_ID, crimeId);
+		
+		// Creates a fragment instance and sets its arguments.
+		CrimeFragment fragment = new CrimeFragment();
+		fragment.setArguments(args);
+		
+		return fragment;
+	}
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState)
@@ -69,17 +91,21 @@ public class CrimeFragment extends Fragment
 		/* mBtnDate settings */ 
 		
 		mBtnDate = (Button) v.findViewById(R.id.btn_crime_date);
-		mBtnDate.setText(mCrime.getDate().toString() );
+		showUpdatedDate();
 		mBtnDate.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v)
 			{
+				FragmentManager fm = getActivity().getSupportFragmentManager();
+				
 				// Create a DatePickerFragment with the crime's date as an argument.
 				DatePickerFragment dialog =
 						DatePickerFragment.newInstance(mCrime.getDate() );
 				
+				// Build a connection with the dialog to get the result returned later on.
+				dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
+				
 				// Show the DatePickerFragment.
-				FragmentManager fm = getActivity().getSupportFragmentManager();
 				dialog.show(fm, DIALOG_DATE);
 			}
 		} );
@@ -102,21 +128,28 @@ public class CrimeFragment extends Fragment
 	}
 	
 	/**
-	 * Creates a new fragment instance and attaches the specified UUID as fragment's arguments.
-	 * @param crimeId a UUID
-	 * @return a new fragment instance with the specified UUID attached as its arguments.
+	 * Set the latest updated date on the date button.
 	 */
-	public static CrimeFragment newInstance(UUID crimeId)
+	private void showUpdatedDate()
 	{
-		// Prepare arguments.
-		Bundle args = new Bundle();  // Contains key-value pairs.
-		args.putSerializable(EXTRA_CRIME_ID, crimeId);
-		
-		// Creates a fragment instance and sets its arguments.
-		CrimeFragment fragment = new CrimeFragment();
-		fragment.setArguments(args);
-		
-		return fragment;
+		mBtnDate.setText(mCrime.getDate().toString() );
+	}
+	
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent i)
+	{
+		if (resultCode != Activity.RESULT_OK) return;
+		if (requestCode == REQUEST_DATE)
+		{
+			// Retrieve data from the passed-in Intent.
+			Date date = (Date) i.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
+			
+			// Update the date in the model layer(CrimeLab)
+			mCrime.setDate(date);
+			
+			// Set the updated date on the mBtnDate.
+			showUpdatedDate();
+		}
 	}
 
 }  // end class

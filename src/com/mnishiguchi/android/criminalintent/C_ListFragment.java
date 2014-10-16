@@ -5,20 +5,15 @@ import java.util.ArrayList;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class C_ListFragment extends ListFragment
 {
-	/* STATIC */
-	private static final String TAG = "CListFragment";
-	
 	/* INSTANCE VARIABLES */
 	// Reference to the list of crimes stored in CrimeLab.
 	private ArrayList<Crime> mCrimes;
