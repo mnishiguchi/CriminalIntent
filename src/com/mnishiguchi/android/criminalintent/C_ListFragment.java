@@ -2,6 +2,7 @@ package com.mnishiguchi.android.criminalintent;
 
 import java.util.ArrayList;
 
+import android.annotation.TargetApi;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
@@ -73,6 +74,7 @@ public class C_ListFragment extends ListFragment
 	/**
 	 * Responds to menu selection.
 	 */
+	@TargetApi(11)
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 		{
@@ -88,8 +90,21 @@ public class C_ListFragment extends ListFragment
 		 			i.putExtra(CrimeFragment.EXTRA_CRIME_ID, crime.getId() );
 		 			startActivityForResult(i, 0);
 		 			
-		 			// Indicate that no further processing is necessary.
-		 			return true;
+		 			return true;  // Indicate that no further processing is necessary.
+		 			
+		 		case R.id.menu_item_show_subtitle:
+		 			// Set the action bar's subtitle, toggling "Show subtitle" & "Hide subtitle"
+		 			if (getActivity().getActionBar().getSubtitle() == null)
+		 			{
+		 				getActivity().getActionBar().setSubtitle(R.string.subtitle);  // Show the subtitle
+		 				item.setTitle(R.string.hide_subtitle);  // Say "Hide subtitle"
+		 			}
+		 			else
+		 			{
+		 				getActivity().getActionBar().setSubtitle(null);  // Hide the subtitle
+		 				item.setTitle(R.string.show_subtitle);  // Say "Show subtitle"
+		 			}
+		 			return true;  // Indicate that no further processing is necessary.
 		 			
 		 		default:
 		 			return super.onOptionsItemSelected(item);

@@ -89,7 +89,6 @@ public class CrimeFragment extends Fragment
 			{
 				getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
 			}
-			
 		}
 		
 		/* mEtTitle settings */ 
