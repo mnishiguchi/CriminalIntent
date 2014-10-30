@@ -12,8 +12,10 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -60,8 +62,19 @@ public class C_ListFragment extends ListFragment
 	public View onCreateView(LayoutInflater inflater, ViewGroup parent,
 			Bundle savedInstanceState)
 	{
-		// Let the super create the layout view.
-		View v = super.onCreateView(inflater, parent, savedInstanceState);
+		// Inflate a custom layout with list & empty.
+		View v = inflater.inflate(R.layout.fragment_crime_list, parent, false);
+		
+		// Set a listener to the emptylist's button.
+		Button btnAddCrime = (Button) v.findViewById(R.id.btn_add_crime);
+		btnAddCrime.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v)
+			{
+				registerNewCrime();
+			}
+		} );
 		
 		// Set the subtitle if it was visible before the rotation.
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
@@ -71,9 +84,10 @@ public class C_ListFragment extends ListFragment
 				getActivity().getActionBar().setSubtitle(R.string.subtitle);
 			}
 		}
+		
+		// Return the layout view.
 		return v;
 	}
-	
 	
 	/* onResume() is the safest place to update a fragment's view. */
 	@Override
@@ -116,41 +130,33 @@ public class C_ListFragment extends ListFragment
 	@TargetApi(11)
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
+	{
+		switch (item.getItemId() )
 		{
-		 	switch (item.getItemId() )
-		 	{
-		 		case R.id.menu_item_new_crime:
-		 			// Create a new Crime object and register it to the CrimeLab.
-		 			Crime crime = new Crime();
-		 			CrimeLab.get(getActivity() ).addCrime(crime) ;
-		 			
-		 			// Open an edit page.
-		 			Intent i = new Intent(getActivity(), PagerActivity.class);
-		 			i.putExtra(CrimeFragment.EXTRA_CRIME_ID, crime.getId() );
-		 			startActivityForResult(i, 0);
-		 			
-		 			return true;  // Indicate that no further processing is necessary.
-		 			
-		 		case R.id.menu_item_show_subtitle:
-		 			// Set the action bar's subtitle, toggling "Show subtitle" & "Hide subtitle"
-		 			if (getActivity().getActionBar().getSubtitle() == null)
-		 			{
-		 				getActivity().getActionBar().setSubtitle(R.string.subtitle);  // Show the subtitle
-		 				mSubtitleVisible = true;
-		 				item.setTitle(R.string.hide_subtitle);  // Say "Hide subtitle"
-		 			}
-		 			else
-		 			{
-		 				getActivity().getActionBar().setSubtitle(null);  // Hide the subtitle
-		 				mSubtitleVisible = false;
-		 				item.setTitle(R.string.show_subtitle);  // Say "Show subtitle"
-		 			}
-		 			return true;  // Indicate that no further processing is necessary.
-		 			
-		 		default:
-		 			return super.onOptionsItemSelected(item);
-		 	}
+			case R.id.menu_item_new_crime:
+				registerNewCrime();
+				return true;  // No further processing is necessary.
+					
+			case R.id.menu_item_show_subtitle:
+				// Set the action bar's subtitle, toggling "Show subtitle" & "Hide subtitle"
+				if (getActivity().getActionBar().getSubtitle() == null)
+				{
+					getActivity().getActionBar().setSubtitle(R.string.subtitle);  // Show the subtitle
+					mSubtitleVisible = true;
+					item.setTitle(R.string.hide_subtitle);  // Say "Hide subtitle"
+				}
+				else
+				{
+					getActivity().getActionBar().setSubtitle(null);  // Hide the subtitle
+					mSubtitleVisible = false;
+					item.setTitle(R.string.show_subtitle);  // Say "Show subtitle"
+				}
+				return true;  // No further processing is necessary.
+				
+			default:
+				return super.onOptionsItemSelected(item);
 		}
+	}
 		
 	@Override
 	public void onListItemClick(ListView lv, View v, int position, long id)
@@ -164,8 +170,22 @@ public class C_ListFragment extends ListFragment
 		startActivity(i);
 	}
 	
-	/** INNER CLASS
-	 * - A custom ArrayAdapter designed to display Crime-specific list items.
+	/**
+	 * Create a new Crime object and register it to the CrimeLab.
+	 * Proceed to the edit page.
+	 */
+	private void registerNewCrime()
+	{
+		Crime crime = new Crime();
+		CrimeLab.get(getActivity() ).addCrime(crime) ;
+			
+		Intent i = new Intent(getActivity(), PagerActivity.class);
+		i.putExtra(CrimeFragment.EXTRA_CRIME_ID, crime.getId() );
+		startActivityForResult(i, 0);
+	}
+	
+	/**
+	 * A custom ArrayAdapter designed to display Crime-specific list items.
 	 */
 	private class CrimeAdapter extends ArrayAdapter<Crime>
 	{
@@ -186,7 +206,7 @@ public class C_ListFragment extends ListFragment
 			if (convertView == null)
 			{
 				convertView = getActivity().getLayoutInflater()
-												.inflate(R.layout.list_item_crime, null);
+						.inflate(R.layout.list_item_crime, null);
 			}
 			
 			/* Configure the convertView for this particular Crime */
