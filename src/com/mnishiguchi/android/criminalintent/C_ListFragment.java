@@ -4,8 +4,10 @@ import java.util.ArrayList;
 
 import android.annotation.TargetApi;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -21,6 +23,7 @@ public class C_ListFragment extends ListFragment
 	/* INSTANCE VARIABLES */
 	// Reference to the list of crimes stored in CrimeLab.
 	private ArrayList<Crime> mCrimes;
+	private boolean mSubtitleVisible;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState)
@@ -37,13 +40,40 @@ public class C_ListFragment extends ListFragment
 		// Get the list of crimes via the CrimeLab singleton.
 		mCrimes = CrimeLab.get(getActivity() ).getCrimes();
 		
+		// Set the list adapter.
 		CrimeAdapter adapter = new CrimeAdapter(mCrimes);
 		setListAdapter(adapter);
+		
+		// Retain this fragment.
+		setRetainInstance(true);
+		
+		// The action bar's subtitle initially hidden.
+		mSubtitleVisible = false;
 	}
 	
 	/* Note: ListFragments come with a default onCreateView() method.
 		The default implementation of a ListFragment inflates a layout that
 		defines a full screen ListView. */
+	
+	@TargetApi(11)
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup parent,
+			Bundle savedInstanceState)
+	{
+		// Let the super create the layout view.
+		View v = super.onCreateView(inflater, parent, savedInstanceState);
+		
+		// Set the subtitle if it was visible before the rotation.
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+		{
+			if (mSubtitleVisible)
+			{
+				getActivity().getActionBar().setSubtitle(R.string.subtitle);
+			}
+		}
+		return v;
+	}
+	
 	
 	/* onResume() is the safest place to update a fragment's view. */
 	@Override
@@ -69,6 +99,15 @@ public class C_ListFragment extends ListFragment
 		
 		// Inflate the menu; this adds items to the action bar.
 		inflater.inflate(R.menu.fragment_crime_list, menu);
+		
+		// Get a reference to the subtitle menu item.
+		MenuItem showSubtitle = menu.findItem(R.id.menu_item_show_subtitle);
+		
+		// Display the subtitle menu item's state based on mSubtitleVisible.
+		if (mSubtitleVisible && showSubtitle != null)
+		{
+			showSubtitle.setTitle(R.string.hide_subtitle);
+		}
 	}
 	
 	/**
@@ -97,11 +136,13 @@ public class C_ListFragment extends ListFragment
 		 			if (getActivity().getActionBar().getSubtitle() == null)
 		 			{
 		 				getActivity().getActionBar().setSubtitle(R.string.subtitle);  // Show the subtitle
+		 				mSubtitleVisible = true;
 		 				item.setTitle(R.string.hide_subtitle);  // Say "Hide subtitle"
 		 			}
 		 			else
 		 			{
 		 				getActivity().getActionBar().setSubtitle(null);  // Hide the subtitle
+		 				mSubtitleVisible = false;
 		 				item.setTitle(R.string.show_subtitle);  // Say "Show subtitle"
 		 			}
 		 			return true;  // Indicate that no further processing is necessary.
