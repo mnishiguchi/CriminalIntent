@@ -44,7 +44,7 @@ public class C_ListFragment extends ListFragment
 		The default implementation of a ListFragment inflates a layout that
 		defines a full screen ListView. */
 	
-	/* onResume() is the safest place to take action to update a fragment's view. */
+	/* onResume() is the safest place to update a fragment's view. */
 	@Override
 	public void onResume()
 	{
@@ -79,11 +79,16 @@ public class C_ListFragment extends ListFragment
 		 	switch (item.getItemId() )
 		 	{
 		 		case R.id.menu_item_new_crime:
+		 			// Create a new Crime object and register it to the CrimeLab.
 		 			Crime crime = new Crime();
 		 			CrimeLab.get(getActivity() ).addCrime(crime) ;
+		 			
+		 			// Open an edit page.
 		 			Intent i = new Intent(getActivity(), PagerActivity.class);
 		 			i.putExtra(CrimeFragment.EXTRA_CRIME_ID, crime.getId() );
 		 			startActivityForResult(i, 0);
+		 			
+		 			// Indicate that no further processing is necessary.
 		 			return true;
 		 			
 		 		default:

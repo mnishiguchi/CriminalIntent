@@ -3,14 +3,20 @@ package com.mnishiguchi.android.criminalintent;
 import java.util.Date;
 import java.util.UUID;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.NavUtils;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -62,14 +68,29 @@ public class CrimeFragment extends Fragment
 		
 		// Fetch the Crime based on the crimeId
 		mCrime = CrimeLab.get(getActivity() ).getCrime(crimeId);
+		
+		// Enable the options menu callback.
+		setHasOptionsMenu(true);
 	}
 	
+	@TargetApi(11)
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup parent,
 			Bundle savedInstanceState)
 	{
 		// Get reference to the layout.
 		View v = inflater.inflate(R.layout.fragment_crime, parent, false);
+		
+		// Turn on the Up button.
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+		{
+			// If a parent activity is registered in the manifest file, enable the Up button.
+			if (NavUtils.getParentActivityIntent(getActivity() ) != null)
+			{
+				getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
+			}
+			
+		}
 		
 		/* mEtTitle settings */ 
 		
@@ -151,5 +172,31 @@ public class CrimeFragment extends Fragment
 			showUpdatedDate();
 		}
 	}
+	
+	//@Override
+	//public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) { }
+	
+	/**
+	 * Respond to menu selection.
+	 */
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item)
+	{
+	 	switch (item.getItemId() )
+	 	{
+	 		// Respond to the enabled Up icon as if it were an existing options menu item.
+			case android.R.id.home:
+				// If a parent activity is registered in the manifest file, move up the app hierarchy.
+				if (NavUtils.getParentActivityName(getActivity() ) != null)
+				{
+					NavUtils.navigateUpFromSameTask(getActivity() );
+				}
+				return true;  // Indicate that no further processing is necessary.
+		 			
+			default:
+				return super.onOptionsItemSelected(item);
+	 	}
+	}
+	
 
 }  // end class
