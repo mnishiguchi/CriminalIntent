@@ -1,10 +1,6 @@
 package com.mnishiguchi.android.criminalintent;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Locale;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -12,7 +8,6 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
-import android.widget.ArrayAdapter;
 
 public class DateTimeOptionsFragment extends DialogFragment
 {
@@ -23,7 +18,6 @@ public class DateTimeOptionsFragment extends DialogFragment
 	
 	/* INSTANCE VARIABLES */
 	private Date mDate;
-	private boolean mSelectedTime = false;
 	
 	/**
 	 * Creates a new instance of DatePickerFragment and sets its arguments bundle.
@@ -53,7 +47,7 @@ public class DateTimeOptionsFragment extends DialogFragment
 	{
 		// Retrieve the arguments.
 		mDate = (Date) getArguments().getSerializable(CrimeFragment.EXTRA_DATE);
-
+		
 		// Option list items.
 		String[] options = { "Set Date", "Set Time"};
 		
@@ -69,6 +63,7 @@ public class DateTimeOptionsFragment extends DialogFragment
 					@Override
 					public void onClick(DialogInterface dialog, int which)
 					{
+						// Show a datePicker of timePicker based on the user's selection.
 						FragmentManager fm = getActivity().getSupportFragmentManager();
 						DialogFragment picker = null;
 						switch (which)
@@ -84,25 +79,4 @@ public class DateTimeOptionsFragment extends DialogFragment
 				} )
 				.create();
 	}
-	/**
-	 * Show a datePicker of timePicker based on the user's selection.
-	 */
-	private void setDateOrTime()
-	{
-		FragmentManager fm = getActivity().getSupportFragmentManager();
-		DialogFragment dialog;
-
-		if (mSelectedTime)
-		{
-			dialog = TimePickerFragment.newInstance(mDate);
-		}
-		else
-		{
-			dialog = DatePickerFragment.newInstance(mDate);
-		}
-
-		dialog.setTargetFragment(getTargetFragment(), getTargetRequestCode() );
-		dialog.show(fm, DIALOG_TIME_OR_DATE);  
-	}
-	
 }

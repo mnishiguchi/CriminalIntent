@@ -10,15 +10,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.NavUtils;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -126,10 +124,18 @@ public class CrimeFragment extends Fragment
 			public void onClick(View v)
 			{
 				FragmentManager fm = getActivity().getSupportFragmentManager();
+				DialogFragment dialog;
 				
 				// Create a DatePickerFragment with the crime's date as an argument.
-				DateTimeOptionsFragment dialog =
-						DateTimeOptionsFragment.newInstance(mCrime.getDate() );
+				boolean hasDateTimePicker = getResources().getBoolean(R.bool.has_datetime_picker);
+				if (hasDateTimePicker)
+				{
+					dialog = DateTimePickerFragment.newInstance(mCrime.getDate() );
+				}
+				else
+				{
+					dialog = 	DateTimeOptionsFragment.newInstance(mCrime.getDate() );
+				}
 				
 				// Build a connection with the dialog to get the result returned later on.
 				dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
@@ -168,16 +174,11 @@ public class CrimeFragment extends Fragment
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent i)
 	{
-		Log.i(TAG, getClass().getSimpleName() + ": entered onActivityResult()");
-		Log.i(TAG, getClass().getSimpleName() + "requestCode == REQUEST_DATE : " +
-					String.valueOf(requestCode == REQUEST_DATE) );
-		
 		if (resultCode != Activity.RESULT_OK) return;
 		if (requestCode == REQUEST_DATE)
 		{
 			// Retrieve data from the passed-in Intent.
 			Date date = (Date) i.getSerializableExtra(EXTRA_DATE);
-			Log.i(TAG, getClass().getSimpleName() + "date: " + date.toString() );
 			
 			// Update the date in the model layer(CrimeLab)
 			mCrime.setDate(date);
@@ -186,9 +187,6 @@ public class CrimeFragment extends Fragment
 			showUpdatedDate();
 		}
 	}
-	
-	//@Override
-	//public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) { }
 	
 	/**
 	 * Respond to menu selection.
@@ -211,6 +209,5 @@ public class CrimeFragment extends Fragment
 				return super.onOptionsItemSelected(item);
 	 	}
 	}
-	
 
 }  // end class

@@ -7,24 +7,54 @@ import java.util.GregorianCalendar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.util.Log;
+import android.view.Display;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.DatePicker;
 import android.widget.DatePicker.OnDateChangedListener;
 import android.widget.TimePicker;
 
 public class DateTimePickerFragment extends DialogFragment
 {
+	public final String TAG = "CriminalIntent";
+	
 	/* STATIC */
 	public static final String EXTRA_DATE = "com.mnishiguchi.android.criminalintent.date";
 	
 	/* INSTANCE VARIABLES */
 	private Date mDate;
-	private int year, month, day, hour, min;
+	
+	// To remember the user's input.
+	private int mYear, mMonth, mDay, mHour, mMin;
 
+	/**
+	 * Creates a new instance of DatePickerFragment and sets its arguments bundle.
+	 * @param date
+	 * @return a new instance of DatePickerFragment.
+	 */
+	public static DateTimePickerFragment newInstance(Date date)
+	{
+		// Prepare arguments.
+		Bundle args = new Bundle();
+		args.putSerializable(CrimeFragment.EXTRA_DATE, date);
+		
+		// Create a new instance of DatePickerFragment.
+		DateTimePickerFragment dialog = new DateTimePickerFragment();
+		
+		// Stash the date in DatePickerFragment's arguments bundle.
+		dialog.setArguments(args);
+		
+		return dialog;
+	}
+	
 	/**
 	 * Sends data to the target fragment.
 	 * @param resultCode
@@ -47,43 +77,44 @@ public class DateTimePickerFragment extends DialogFragment
 
 		Calendar calendar = new GregorianCalendar();
 		calendar.setTime(mDate);
-		year = calendar.get(Calendar.YEAR);
-		month = calendar.get(Calendar.MONTH);
-		day = calendar.get(Calendar.DAY_OF_MONTH);
-		hour = calendar.get(Calendar.HOUR_OF_DAY);
-		min = calendar.get(Calendar.MINUTE);
+		mYear = calendar.get(Calendar.YEAR);
+		mMonth = calendar.get(Calendar.MONTH);
+		mDay = calendar.get(Calendar.DAY_OF_MONTH);
+		mHour = calendar.get(Calendar.HOUR_OF_DAY);
+		mMin = calendar.get(Calendar.MINUTE);
 
 		View v = getActivity().getLayoutInflater().inflate(R.layout.dialog_datetime, null);
 
 		DatePicker datePicker = (DatePicker)v.findViewById(R.id.dialog_datetime_datePicker);
 		TimePicker timePicker = (TimePicker)v.findViewById(R.id.dialog_datetime_timePicker);
 
-		datePicker.init(year, month, day, new OnDateChangedListener() {
+		datePicker.init(mYear, mMonth, mDay, new OnDateChangedListener() {
 			
 			@Override
 			public void onDateChanged(DatePicker view, int year, int month, int day)
 			{
-				DateTimePickerFragment.this.year = year;
-				DateTimePickerFragment.this.month = month;
-				DateTimePickerFragment.this.day = day;
-				updateDateTime();
+				mYear = year;
+				mMonth = month;
+				mDay = day;
+				updateDate();
 			}
 		} );
 
-		timePicker.setCurrentHour(hour);
-		timePicker.setCurrentMinute(min);
+		timePicker.setCurrentHour(mHour);
+		timePicker.setCurrentMinute(mMin);
+		timePicker.setIs24HourView(true);
 		timePicker.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
 			
 			@Override
 			public void onTimeChanged(TimePicker view, int hour, int min)
 			{
-				DateTimePickerFragment.this.hour = hour;
-				DateTimePickerFragment.this.min = min;
-				updateDateTime();
+				mHour = hour;
+				mMin = min;
+				updateDate();
 			}
-		});
+		} );
 
-		return new AlertDialog.Builder(getActivity())
+		return new AlertDialog.Builder(getActivity() )
 				.setView(v)
 				.setTitle(R.string.date_picker_title)
 				.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -97,9 +128,15 @@ public class DateTimePickerFragment extends DialogFragment
 				.create();
 	}
 
-	public void updateDateTime()
+	/**
+	 * Update mDate based on updated values that the user has inputed.
+	 */
+	public void updateDate()
 	{
-		mDate = new GregorianCalendar(year, month, day, hour, min).getTime();
-		getArguments().putSerializable(EXTRA_DATE, mDate);
+		// Translate year, month and day into a Date object.
+		mDate = new GregorianCalendar(mYear, mMonth, mDay, mHour, mMin).getTime();
+		
+		// Update arguments to preserve selected value on rotation.
+		getArguments().putSerializable(CrimeFragment.EXTRA_DATE, mDate);
 	}
 }

@@ -11,7 +11,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.util.Log;
 import android.view.View;
 import android.widget.TimePicker;
 
@@ -121,13 +120,8 @@ public class TimePickerFragment extends DialogFragment
 	 */
 	public void updateDate()
 	{
-		Log.i(TAG, getClass().getSimpleName() + ": entered updateDateTime()");
-		Log.i(TAG, getClass().getSimpleName() + "date - before: " + mDate.toString() );
-		
 		// Translate year, month and day into a Date object.
 		mDate = new GregorianCalendar(mYear, mMonth, mDay, mHour, mMin).getTime();
-		
-		Log.i(TAG, getClass().getSimpleName() + "date - after: " + mDate.toString() );
 		
 		// Update arguments to preserve selected value on rotation.
 		getArguments().putSerializable(CrimeFragment.EXTRA_DATE, mDate);
