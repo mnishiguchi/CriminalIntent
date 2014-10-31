@@ -15,39 +15,30 @@ import android.view.View;
 import android.widget.DatePicker;
 import android.widget.DatePicker.OnDateChangedListener;
 
-/**
- * Manages the AlertDialog that displays a DatePicker widget.
- */
-public class DatePickerFragment extends DialogFragment
+public class TimePickerFragment extends DialogFragment
 {
 	/* STATIC */
-	public static final String EXTRA_DATE = "com.mnishiguchi.android.criminalintent.date";
-	public static final String EXTRA_YEAR = "com.mnishiguchi.android.criminalintent.year";
-	public static final String EXTRA_MONTH = "com.mnishiguchi.android.criminalintent.month";
-	public static final String EXTRA_DAY = "com.mnishiguchi.android.criminalintent.day";
+	public static final String EXTRA_TIME = "com.mnishiguchi.android.criminalintent.time";
 	
 	/* INSTANCE VARIABLES */
 	private Date mDate;
-	private int year, month, day;
 	
 	/**
 	 * Creates a new instance of DatePickerFragment and sets its arguments bundle.
 	 * @param date
 	 * @return a new instance of DatePickerFragment.
 	 */
-	public static DatePickerFragment newInstance(int year, int month, int day)
+	public static TimePickerFragment newInstance(Date date)
 	{
 		// Prepare arguments.
-		Bundle args = new Bundle();
-		args.putInt(EXTRA_YEAR, year);
-		args.putInt(EXTRA_MONTH, month);
-		args.putInt(EXTRA_DAY, day);
+		//Bundle args = new Bundle();
+		//args.putSerializable(EXTRA_TIME, date);
 		
 		// Create a new instance of DatePickerFragment.
-		DatePickerFragment fragment = new DatePickerFragment();
+		TimePickerFragment fragment = new TimePickerFragment();
 		
 		// Stash the date in DatePickerFragment's arguments bundle.
-		fragment.setArguments(args);
+		//fragment.setArguments(args);
 		
 		return fragment;
 	}
@@ -59,16 +50,12 @@ public class DatePickerFragment extends DialogFragment
 	private void sendResult(int resultCode)
 	{
 		// Do nothing if there is no target fragment.
-		if (getTargetFragment() == null) return;
+		//if (getTargetFragment() == null) return;
 		
 		// Send data to the target fragment.
-		Intent resultIntent = new Intent();
-		resultIntent.putExtra(EXTRA_YEAR, year);
-		resultIntent.putExtra(EXTRA_MONTH, month);
-		resultIntent.putExtra(EXTRA_DAY, day);
-		
-		getTargetFragment().onActivityResult(
-				DateTimeOptionsFragment.REQUEST_SET_DATE, resultCode, resultIntent);
+		//Intent i = new Intent();
+		//i.putExtra(EXTRA_TIME, mDate);  // Date is a Serializable object.
+		//getTargetFragment().onActivityResult(CrimeFragment.REQUEST_DATE, resultCode, i);
 	}
 	
 	/**
@@ -78,9 +65,14 @@ public class DatePickerFragment extends DialogFragment
 	public Dialog onCreateDialog(Bundle savedInstanceState)
 	{
 		// Retrieve the arguments.
-		year =  getArguments().getInt(EXTRA_YEAR);
-		month =  getArguments().getInt(EXTRA_MONTH);
-		day =  getArguments().getInt(EXTRA_DAY);
+		mDate = (Date) getArguments().getSerializable(EXTRA_TIME);
+		
+		// Create a Calendar to get integers for the year, month and day.
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(mDate);
+		int year = calendar.get(Calendar.YEAR);
+		int month = calendar.get(Calendar.MONTH);
+		int day = calendar.get(Calendar.DAY_OF_MONTH);
 		
 		// Inflate the DatePicker layout defined in res/layout/dialog_date.xml.
 		View v = getActivity().getLayoutInflater()
@@ -93,10 +85,11 @@ public class DatePickerFragment extends DialogFragment
 			@Override
 			public void onDateChanged(DatePicker view, int year, int month, int day)
 			{
+				// Translate year, month and day into a Date object.
+				mDate = new GregorianCalendar(year, month, day).getTime();
+				
 				// Update arguments to preserve selected value on rotation.
-				getArguments().putInt(EXTRA_YEAR, year);
-				getArguments().putInt(EXTRA_MONTH, month);
-				getArguments().putInt(EXTRA_DAY, day);
+				getArguments().putSerializable(EXTRA_TIME, mDate);
 			}
 		} );
 

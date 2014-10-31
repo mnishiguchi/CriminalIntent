@@ -96,11 +96,13 @@ public class CrimeFragment extends Fragment
 		mEtTitle = (EditText) v.findViewById(R.id.et_crime_title);
 		mEtTitle.setText(mCrime.getTitle() );
 		mEtTitle.addTextChangedListener(new TextWatcher() {
+			
 			@Override
 			public void onTextChanged(CharSequence input, int start, int before, int count)
 			{
 				mCrime.setTitle(input.toString() );
 			}
+			
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) { }  // Unused
 			
@@ -119,8 +121,8 @@ public class CrimeFragment extends Fragment
 				FragmentManager fm = getActivity().getSupportFragmentManager();
 				
 				// Create a DatePickerFragment with the crime's date as an argument.
-				DatePickerFragment dialog =
-						DatePickerFragment.newInstance(mCrime.getDate() );
+				DateTimeOptionsFragment dialog =
+						DateTimeOptionsFragment.newInstance(mCrime.getDate() );
 				
 				// Build a connection with the dialog to get the result returned later on.
 				dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
@@ -135,6 +137,7 @@ public class CrimeFragment extends Fragment
 		mCbSolved = (CheckBox) v.findViewById(R.id.cb_crime_solved);
 		mCbSolved.setChecked(mCrime.isSolved() );
 		mCbSolved.setOnCheckedChangeListener( new OnCheckedChangeListener() {
+			
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
 			{
