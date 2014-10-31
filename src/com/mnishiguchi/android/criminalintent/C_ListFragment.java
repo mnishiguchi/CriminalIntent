@@ -220,7 +220,7 @@ public class C_ListFragment extends ListFragment
 			
 			TextView tvDate = (TextView)
 					convertView.findViewById(R.id.tv_list_item_crime_date);
-			tvDate.setText(crime.getDate().toString() );
+			tvDate.setText(CrimeFragment.DATE_FORMAT.format(crime.getDate() ) );
 			
 			CheckBox cb_Solved = (CheckBox)
 					convertView.findViewById(R.id.cb_list_item_crime_solved);

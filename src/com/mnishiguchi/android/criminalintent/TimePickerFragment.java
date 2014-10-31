@@ -11,14 +11,19 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.util.Log;
 import android.view.View;
 import android.widget.TimePicker;
 
 public class TimePickerFragment extends DialogFragment
 {
+	public final String TAG = "CriminalIntent";
+	
 	/* INSTANCE VARIABLES */
 	private Date mDate;
-	private int year, month, day, hour, min;
+	
+	// To remember the user's input.
+	private int mYear, mMonth, mDay, mHour, mMin;
 	
 	/**
 	 * Creates a new instance of DatePickerFragment and sets its arguments bundle.
@@ -64,30 +69,33 @@ public class TimePickerFragment extends DialogFragment
 		// Retrieve the arguments.
 		mDate = (Date) getArguments().getSerializable(CrimeFragment.EXTRA_DATE);
 		
-		// Create a Calendar to get integers for the year, month and day.
+		// Get initial integers for year, month, day, etc.
 		Calendar calendar = new GregorianCalendar();
 		calendar.setTime(mDate);
-		year = calendar.get(Calendar.YEAR);
-		month = calendar.get(Calendar.MONTH);
-		day = calendar.get(Calendar.DAY_OF_MONTH);
-		hour = calendar.get(Calendar.HOUR_OF_DAY);
-		min = calendar.get(Calendar.MINUTE);
+		mYear = calendar.get(Calendar.YEAR);
+		mMonth = calendar.get(Calendar.MONTH);
+		mDay = calendar.get(Calendar.DAY_OF_MONTH);
+		mHour = calendar.get(Calendar.HOUR_OF_DAY);
+		mMin = calendar.get(Calendar.MINUTE);
 		
 		// Inflate the dialog's layout defined in res/layout/dialog_time.xml.
 		View dialogView = getActivity().getLayoutInflater().inflate(R.layout.dialog_time, null);
 		
 		// Initialize the TimePicker component.
-		TimePicker timePicker = (TimePicker) dialogView.findViewById(R.id.timePicker);
-		timePicker.setCurrentHour(hour);
-		timePicker.setCurrentMinute(min);
+		TimePicker timePicker = (TimePicker) dialogView.findViewById(R.id.dialog_date_timePicker);
+		timePicker.setCurrentHour(mHour);
+		timePicker.setCurrentMinute(mMin);
+		timePicker.setIs24HourView(true);
 		timePicker.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
 			
 			@Override
 			public void onTimeChanged(TimePicker view, int hour, int min)
 			{
-				TimePickerFragment.this.hour = hour;
-				TimePickerFragment.this.min = min;
-				updateDateTime();
+				// Remember updated values.
+				mHour = hour;
+				mMin = min;
+				
+				updateDate();
 			}
 		} );
 
@@ -101,17 +109,25 @@ public class TimePickerFragment extends DialogFragment
 									@Override
 									public void onClick(DialogInterface dialog, int which)
 									{
-										updateDateTime();
+										updateDate();
 										sendResult(Activity.RESULT_OK);
 									}
 								} )
 						.create();
 	}
 	
-	public void updateDateTime()
+	/**
+	 * Update mDate based on updated values that the user has inputed.
+	 */
+	public void updateDate()
 	{
+		Log.i(TAG, getClass().getSimpleName() + ": entered updateDateTime()");
+		Log.i(TAG, getClass().getSimpleName() + "date - before: " + mDate.toString() );
+		
 		// Translate year, month and day into a Date object.
-		mDate = new GregorianCalendar(year, month, day, hour, min).getTime();
+		mDate = new GregorianCalendar(mYear, mMonth, mDay, mHour, mMin).getTime();
+		
+		Log.i(TAG, getClass().getSimpleName() + "date - after: " + mDate.toString() );
 		
 		// Update arguments to preserve selected value on rotation.
 		getArguments().putSerializable(CrimeFragment.EXTRA_DATE, mDate);

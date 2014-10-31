@@ -1,5 +1,6 @@
 package com.mnishiguchi.android.criminalintent;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -52,45 +53,33 @@ public class DateTimeOptionsFragment extends DialogFragment
 	{
 		// Retrieve the arguments.
 		mDate = (Date) getArguments().getSerializable(CrimeFragment.EXTRA_DATE);
-	
-		// Create a custom adapter for the dialog options.
-		final ArrayAdapter<String> optionsAdapter = new ArrayAdapter<String>(
-				getActivity(), android.R.layout.select_dialog_singlechoice);
-		optionsAdapter.add("Set date");
-		optionsAdapter.add("Set time");
-		
-		Calendar calendar = new GregorianCalendar();
-		calendar.setTime(mDate);
-		int year = calendar.get(Calendar.YEAR);
-		int month = calendar.get(Calendar.MONTH);
-		int day = calendar.get(Calendar.DAY_OF_MONTH);
-		int hour = calendar.get(Calendar.HOUR_OF_DAY);
-		int min = calendar.get(Calendar.MINUTE);
-		String dateString = year + "-" + month+1 + "-" + day;
-		String timeString = hour + ":" + min;
-		String[] options = {dateString, timeString};
+
+		// Option list items.
+		String[] options = { "Set Date", "Set Time"};
 		
 		// Configure the AlertDialog and return it.
 		return new AlertDialog.Builder(getActivity() )
-				.setTitle(mDate.toString() )
+				.setTitle("Currently: " + CrimeFragment.DATE_FORMAT.format(mDate) )
 				.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) { }  // Do nothing.
 				} )
-				//.setSingleChoiceItems(optionsAdapter, 0,
 				.setItems(options, new DialogInterface.OnClickListener() {
 					
 					@Override
 					public void onClick(DialogInterface dialog, int which)
 					{
+						FragmentManager fm = getActivity().getSupportFragmentManager();
+						DialogFragment picker = null;
 						switch (which)
 						{
-							case 0: mSelectedTime = false;
+							case 0: picker = DatePickerFragment.newInstance(mDate);
 								break;
-							case 1: mSelectedTime = true;
+							case 1: picker = TimePickerFragment.newInstance(mDate);
 								break;
 						}
-						setDateOrTime();
+						picker.setTargetFragment(getTargetFragment(), getTargetRequestCode() );
+						picker.show(fm, DIALOG_TIME_OR_DATE);  
 					}
 				} )
 				.create();

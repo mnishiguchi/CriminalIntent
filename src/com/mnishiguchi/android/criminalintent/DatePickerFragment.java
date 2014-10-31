@@ -118,6 +118,9 @@ public class DatePickerFragment extends DialogFragment
 						.create();
 	}
 	
+	/**
+	 * Update mDate based on updated values that the user has inputed.
+	 */
 	public void updateDate()
 	{
 		Log.i(TAG, getClass().getSimpleName() + ": entered updateDateTime()");

@@ -55,8 +55,8 @@ public class DateTimePickerFragment extends DialogFragment
 
 		View v = getActivity().getLayoutInflater().inflate(R.layout.dialog_datetime, null);
 
-		DatePicker datePicker = (DatePicker)v.findViewById(R.id.datePicker);
-		TimePicker timePicker = (TimePicker)v.findViewById(R.id.timePicker);
+		DatePicker datePicker = (DatePicker)v.findViewById(R.id.dialog_datetime_datePicker);
+		TimePicker timePicker = (TimePicker)v.findViewById(R.id.dialog_datetime_timePicker);
 
 		datePicker.init(year, month, day, new OnDateChangedListener() {
 			
@@ -68,7 +68,7 @@ public class DateTimePickerFragment extends DialogFragment
 				DateTimePickerFragment.this.day = day;
 				updateDateTime();
 			}
-		});
+		} );
 
 		timePicker.setCurrentHour(hour);
 		timePicker.setCurrentMinute(min);

@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/datetimeHost" 
+    android:id="@+id/dialog_datetime" 
     android:orientation="vertical" 
     android:layout_width="fill_parent" 
     android:layout_height="fill_parent" >
     
     <DatePicker 
-        android:id="@+id/datePicker" 
+        android:id="@+id/dialog_datetime_datePicker" 
         android:calendarViewShown="false" 
           android:layout_width="fill_parent" 
         android:layout_height="wrap_content" >
     </DatePicker>
     
     <TimePicker 
-        android:id="@+id/timePicker" 
+        android:id="@+id/dialog_datetime_timePicker" 
         android:layout_width="fill_parent" 
         android:layout_height="wrap_content" >
     </TimePicker>
