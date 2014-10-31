@@ -7,11 +7,13 @@ import java.util.GregorianCalendar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -21,6 +23,8 @@ import android.widget.ListView;
 
 public class DateTimeOptionsFragment extends DialogFragment
 {
+	public final String TAG = "CriminalIntent";
+	
 	/* STATIC */
 	public static final String EXTRA_DATE = "com.mnishiguchi.android.criminalintent.date";
 	public static final String DIALOG_DATE_PICKER = "date picker";
@@ -30,10 +34,11 @@ public class DateTimeOptionsFragment extends DialogFragment
 	
 	/* INSTANCE VARIABLES */
 	private Date mDate;
-	private boolean mWantToSetDate = false;
+	private boolean mWantToSetDate = true;
 	private boolean mWantToSetTime = false;
 	private int year, month, day, hour, min;
 	
+	//private Context mAppContext = getActivity().getApplicationContext();
 	/**
 	 * Creates a new instance of DatePickerFragment and sets its arguments bundle.
 	 * @param date
@@ -65,8 +70,26 @@ public class DateTimeOptionsFragment extends DialogFragment
 		
 		// Send data to the target fragment.
 		Intent i = new Intent();
+		updateDate(year, month, day, hour, min);
+		Log.i(TAG, getClass().getSimpleName() + ": sendResult() - " + year+"-"+month+"-"+day+"-"+hour+"-"+min);
+		Log.i(TAG, getClass().getSimpleName() + ": sendResult() - " + mDate.toString());
 		i.putExtra(EXTRA_DATE, mDate);  // Date is a Serializable object.
 		getTargetFragment().onActivityResult(CrimeFragment.REQUEST_DATE, resultCode, i);
+	}
+	
+	/**
+	 * Update the date based on the user's input.
+	 */
+	private void updateDate(int year, int month, int day, int hour, int min)
+	{
+		mDate = new GregorianCalendar(year, month, day, hour, min).getTime();
+	}
+	
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState)
+	{
+		super.onActivityCreated(savedInstanceState);
+		setRetainInstance(true);
 	}
 	
 	/**
@@ -88,52 +111,43 @@ public class DateTimeOptionsFragment extends DialogFragment
 		hour = calendar.get(Calendar.HOUR_OF_DAY);
 		min = calendar.get(Calendar.MINUTE);
 		
-		// Inflate the DatePicker layout defined in res/layout/dialog_date.xml.
-		View v = getActivity().getLayoutInflater()
-				.inflate(R.layout.dialog_date, null);
-		
 		// Create a custom adapter for the dialog options.
 		final ArrayAdapter<String> optionsAdapter = new ArrayAdapter<String>(
 				getActivity(), android.R.layout.select_dialog_singlechoice);
 		optionsAdapter.add("Set date");
 		optionsAdapter.add("Set time");
-		optionsAdapter.add("Set date & time");
 		
 		// Configure the AlertDialog and return it.
 		return new AlertDialog.Builder(getActivity() )
-						.setView(v)
-						.setTitle(R.string.date_picker_title)
-						.setPositiveButton("Test", new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) { }
-								// Do nothing here because we override this button later to change the close behaviour. 
-								// However, we still need this because on older versions of Android unless we 
-								// pass a handler the button doesn't get instantiated
-						} )
-						.setAdapter(optionsAdapter,  new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which)
-							{
-								switch (which)
-								{
-									case 0:
-										if (mWantToSetDate)
-										{
-											// do something.
-										}
-										break;
-									case 1: // do something.
-										if (mWantToSetTime)
-										{
-											// do something.
-										}
-										break;
-									case 2: // do something.
-									default: // do something.
-								}
-							}
-						} )
-						.create();
+				.setTitle(R.string.date_picker_title)
+				.setPositiveButton("Test", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) { } // Do nothing.
+						// Set the configuration in onStart()
+				} )
+				.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) { }  // Do nothing.
+				} )					
+				.setSingleChoiceItems(optionsAdapter, 0,
+						new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which)
+					{
+						switch (which)
+						{
+							case 1:
+								mWantToSetDate = false;
+								mWantToSetTime = true;
+								break;
+							case 0: 
+							default:
+								mWantToSetDate = true;
+								mWantToSetTime = false;
+						}
+					}
+				} )
+				.create();
 	}
 	
 	@Override
@@ -150,13 +164,25 @@ public class DateTimeOptionsFragment extends DialogFragment
 				@Override
 				public void onClick(View v)
 				{
-					if(wantToCloseDialog() )
+					if (wantToCloseDialog() )
 					{
+						// Send the date/time data to CrimeFragment.
 						sendResult(Activity.RESULT_OK);
+						
+						// Close this dialog.
+						setRetainInstance(false);
 						dismiss();
 					}
 					
-					
+					if (mWantToSetDate)
+					{
+						// Start DatePicker.
+						setDate();
+					}
+					if (mWantToSetTime)
+					{
+						// Start TimePicker.
+					}
 					
 				}
 		} );
@@ -178,10 +204,29 @@ public class DateTimeOptionsFragment extends DialogFragment
 	}
 	
 	/**
-	 * 
+	 * @return true if both mWantToSetDate and mWantToSetTime are set to false.
 	 */
 	private boolean wantToCloseDialog()
 	{
-		return true;
+		if (!mWantToSetDate && !mWantToSetTime)
+		{
+			return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent i)
+	{
+		if (resultCode != Activity.RESULT_OK) return;
+		if (requestCode == REQUEST_SET_DATE)
+		{
+			// Retrieve data from the passed-in Intent.
+			year = i.getExtras().getInt(DatePickerFragment.EXTRA_YEAR);
+			month = i.getExtras().getInt(DatePickerFragment.EXTRA_MONTH);
+			day = i.getExtras().getInt(DatePickerFragment.EXTRA_DAY);
+			
+			this.mWantToSetDate = false;
+		}
 	}
 }

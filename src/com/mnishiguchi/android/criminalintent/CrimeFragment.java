@@ -165,7 +165,7 @@ public class CrimeFragment extends Fragment
 		if (requestCode == REQUEST_DATE)
 		{
 			// Retrieve data from the passed-in Intent.
-			Date date = (Date) i.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
+			Date date = (Date) i.getSerializableExtra(DateTimeOptionsFragment.EXTRA_DATE);
 			
 			// Update the date in the model layer(CrimeLab)
 			mCrime.setDate(date);
