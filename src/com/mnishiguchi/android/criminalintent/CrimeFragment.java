@@ -13,6 +13,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.NavUtils;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,9 +29,12 @@ import android.widget.EditText;
 
 public class CrimeFragment extends Fragment
 {
+	public final String TAG = "CriminalIntent";
+	
 	/* STATIC */
+	public static final String EXTRA_DATE = "com.mnishiguchi.android.criminalintent.date";
 	public static final String EXTRA_CRIME_ID = "com.mnishiguchi.android.criminalintent.crime_id";
-	public static final String DIALOG_DATE = "date";
+	public static final String DIALOG_OPTION_DATETIME = "date";
 	public static final int REQUEST_DATE = 0;
 	
 	/* INSTANCE VARIABLES */
@@ -128,7 +132,7 @@ public class CrimeFragment extends Fragment
 				dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
 				
 				// Show the DatePickerFragment.
-				dialog.show(fm, DIALOG_DATE);
+				dialog.show(fm, DIALOG_OPTION_DATETIME);
 			}
 		} );
 		
@@ -161,11 +165,16 @@ public class CrimeFragment extends Fragment
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent i)
 	{
+		Log.i(TAG, getClass().getSimpleName() + ": entered onActivityResult()");
+		Log.i(TAG, getClass().getSimpleName() + "requestCode == REQUEST_DATE : " +
+					String.valueOf(requestCode == REQUEST_DATE) );
+		
 		if (resultCode != Activity.RESULT_OK) return;
 		if (requestCode == REQUEST_DATE)
 		{
 			// Retrieve data from the passed-in Intent.
-			Date date = (Date) i.getSerializableExtra(DateTimeOptionsFragment.EXTRA_DATE);
+			Date date = (Date) i.getSerializableExtra(EXTRA_DATE);
+			Log.i(TAG, getClass().getSimpleName() + "date: " + date.toString() );
 			
 			// Update the date in the model layer(CrimeLab)
 			mCrime.setDate(date);

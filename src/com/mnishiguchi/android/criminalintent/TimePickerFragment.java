@@ -12,16 +12,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.view.View;
-import android.widget.DatePicker;
-import android.widget.DatePicker.OnDateChangedListener;
+import android.widget.TimePicker;
 
 public class TimePickerFragment extends DialogFragment
 {
-	/* STATIC */
-	public static final String EXTRA_TIME = "com.mnishiguchi.android.criminalintent.time";
-	
 	/* INSTANCE VARIABLES */
 	private Date mDate;
+	private int year, month, day, hour, min;
 	
 	/**
 	 * Creates a new instance of DatePickerFragment and sets its arguments bundle.
@@ -31,16 +28,16 @@ public class TimePickerFragment extends DialogFragment
 	public static TimePickerFragment newInstance(Date date)
 	{
 		// Prepare arguments.
-		//Bundle args = new Bundle();
-		//args.putSerializable(EXTRA_TIME, date);
+		Bundle args = new Bundle();
+		args.putSerializable(CrimeFragment.EXTRA_DATE, date);
 		
 		// Create a new instance of DatePickerFragment.
-		TimePickerFragment fragment = new TimePickerFragment();
+		TimePickerFragment dialog = new TimePickerFragment();
 		
 		// Stash the date in DatePickerFragment's arguments bundle.
-		//fragment.setArguments(args);
+		dialog.setArguments(args);
 		
-		return fragment;
+		return dialog;
 	}
 	
 	/**
@@ -50,12 +47,12 @@ public class TimePickerFragment extends DialogFragment
 	private void sendResult(int resultCode)
 	{
 		// Do nothing if there is no target fragment.
-		//if (getTargetFragment() == null) return;
+		if (getTargetFragment() == null) return;
 		
 		// Send data to the target fragment.
-		//Intent i = new Intent();
-		//i.putExtra(EXTRA_TIME, mDate);  // Date is a Serializable object.
-		//getTargetFragment().onActivityResult(CrimeFragment.REQUEST_DATE, resultCode, i);
+		Intent i = new Intent();
+		i.putExtra(CrimeFragment.EXTRA_DATE, mDate);  // Date is a Serializable object.
+		getTargetFragment().onActivityResult(CrimeFragment.REQUEST_DATE, resultCode, i);
 	}
 	
 	/**
@@ -65,48 +62,58 @@ public class TimePickerFragment extends DialogFragment
 	public Dialog onCreateDialog(Bundle savedInstanceState)
 	{
 		// Retrieve the arguments.
-		mDate = (Date) getArguments().getSerializable(EXTRA_TIME);
+		mDate = (Date) getArguments().getSerializable(CrimeFragment.EXTRA_DATE);
 		
 		// Create a Calendar to get integers for the year, month and day.
-		Calendar calendar = Calendar.getInstance();
+		Calendar calendar = new GregorianCalendar();
 		calendar.setTime(mDate);
-		int year = calendar.get(Calendar.YEAR);
-		int month = calendar.get(Calendar.MONTH);
-		int day = calendar.get(Calendar.DAY_OF_MONTH);
+		year = calendar.get(Calendar.YEAR);
+		month = calendar.get(Calendar.MONTH);
+		day = calendar.get(Calendar.DAY_OF_MONTH);
+		hour = calendar.get(Calendar.HOUR_OF_DAY);
+		min = calendar.get(Calendar.MINUTE);
 		
-		// Inflate the DatePicker layout defined in res/layout/dialog_date.xml.
-		View v = getActivity().getLayoutInflater()
-				.inflate(R.layout.dialog_date, null);
+		// Inflate the dialog's layout defined in res/layout/dialog_time.xml.
+		View dialogView = getActivity().getLayoutInflater().inflate(R.layout.dialog_time, null);
 		
-		// Initialize the DatePicker component.
-		DatePicker datePicker = (DatePicker) v.findViewById(R.id.dialog_date_datePicker);
-		datePicker.init(year, month, day, new OnDateChangedListener() {
+		// Initialize the TimePicker component.
+		TimePicker timePicker = (TimePicker) dialogView.findViewById(R.id.timePicker);
+		timePicker.setCurrentHour(hour);
+		timePicker.setCurrentMinute(min);
+		timePicker.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
 			
 			@Override
-			public void onDateChanged(DatePicker view, int year, int month, int day)
+			public void onTimeChanged(TimePicker view, int hour, int min)
 			{
-				// Translate year, month and day into a Date object.
-				mDate = new GregorianCalendar(year, month, day).getTime();
-				
-				// Update arguments to preserve selected value on rotation.
-				getArguments().putSerializable(EXTRA_TIME, mDate);
+				TimePickerFragment.this.hour = hour;
+				TimePickerFragment.this.min = min;
+				updateDateTime();
 			}
 		} );
 
 		// Configure it and return it.
 		return new AlertDialog.Builder(getActivity() )
-						.setView(v)
+						.setView(dialogView)
 						.setTitle(R.string.date_picker_title)
 						.setPositiveButton(
-								android.R.string.ok,
-								new DialogInterface.OnClickListener() {
+								android.R.string.ok, new DialogInterface.OnClickListener() {
+									
 									@Override
 									public void onClick(DialogInterface dialog, int which)
 									{
+										updateDateTime();
 										sendResult(Activity.RESULT_OK);
 									}
 								} )
 						.create();
 	}
 	
+	public void updateDateTime()
+	{
+		// Translate year, month and day into a Date object.
+		mDate = new GregorianCalendar(year, month, day, hour, min).getTime();
+		
+		// Update arguments to preserve selected value on rotation.
+		getArguments().putSerializable(CrimeFragment.EXTRA_DATE, mDate);
+	}
 }
