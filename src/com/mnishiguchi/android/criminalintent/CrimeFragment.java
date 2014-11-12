@@ -1,5 +1,6 @@
 package com.mnishiguchi.android.criminalintent;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -36,7 +37,8 @@ public class CrimeFragment extends Fragment
 	public static final String EXTRA_CRIME_ID = "com.mnishiguchi.android.criminalintent.crime_id";
 	public static final String DIALOG_OPTION_DATETIME = "date";
 	public static final int REQUEST_DATE = 0;
-	public static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
+	public static DateFormat DATE_FORMAT = DateFormat.getDateTimeInstance(
+	          DateFormat.LONG, DateFormat.SHORT, Locale.getDefault());
 	
 	/* INSTANCE VARIABLES */
 	private Crime mCrime;  // Reference to the data stored in CrimeLab(model layer)

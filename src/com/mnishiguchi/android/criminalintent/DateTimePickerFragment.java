@@ -7,17 +7,11 @@ import java.util.GregorianCalendar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.util.Log;
-import android.view.Display;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.DatePicker;
 import android.widget.DatePicker.OnDateChangedListener;
 import android.widget.TimePicker;
@@ -26,10 +20,8 @@ public class DateTimePickerFragment extends DialogFragment
 {
 	public final String TAG = "CriminalIntent";
 	
-	/* STATIC */
 	public static final String EXTRA_DATE = "com.mnishiguchi.android.criminalintent.date";
 	
-	/* INSTANCE VARIABLES */
 	private Date mDate;
 	
 	// To remember the user's input.
@@ -93,30 +85,34 @@ public class DateTimePickerFragment extends DialogFragment
 			@Override
 			public void onDateChanged(DatePicker view, int year, int month, int day)
 			{
+				// Remember updated values.
 				mYear = year;
 				mMonth = month;
 				mDay = day;
+				
 				updateDate();
 			}
 		} );
 
 		timePicker.setCurrentHour(mHour);
 		timePicker.setCurrentMinute(mMin);
-		timePicker.setIs24HourView(true);
+		timePicker.setIs24HourView(false);
 		timePicker.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
 			
 			@Override
 			public void onTimeChanged(TimePicker view, int hour, int min)
 			{
+				// Remember updated values.
 				mHour = hour;
 				mMin = min;
+				
 				updateDate();
 			}
 		} );
 
 		return new AlertDialog.Builder(getActivity() )
 				.setView(v)
-				.setTitle(R.string.date_picker_title)
+				.setTitle(R.string.datetime_picker_title)
 				.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 					
 					@Override

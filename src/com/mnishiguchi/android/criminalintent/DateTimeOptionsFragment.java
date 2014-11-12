@@ -53,7 +53,7 @@ public class DateTimeOptionsFragment extends DialogFragment
 		
 		// Configure the AlertDialog and return it.
 		return new AlertDialog.Builder(getActivity() )
-				.setTitle("Currently: " + CrimeFragment.DATE_FORMAT.format(mDate) )
+				//.setTitle("Currently: " + CrimeFragment.DATE_FORMAT.format(mDate) )
 				.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) { }  // Do nothing.

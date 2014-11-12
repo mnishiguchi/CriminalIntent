@@ -101,19 +101,19 @@ public class DatePickerFragment extends DialogFragment
 
 		// Configure it and return it.
 		return new AlertDialog.Builder(getActivity() )
-						.setView(dialogView)
-						.setTitle(R.string.date_picker_title)
-						.setPositiveButton(
-								android.R.string.ok,
-								new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog, int which)
-									{
-										updateDate();
-										sendResult(Activity.RESULT_OK);
-									}
-								} )
-						.create();
+				.setView(dialogView)
+				.setTitle(R.string.date_picker_title)
+				.setPositiveButton(
+						android.R.string.ok,
+						new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which)
+							{
+								updateDate();
+								sendResult(Activity.RESULT_OK);
+							}
+						} )
+				.create();
 	}
 	
 	/**

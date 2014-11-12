@@ -20,7 +20,7 @@ import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class C_ListFragment extends ListFragment
+public class CrimeListFragment extends ListFragment
 {
 	/* INSTANCE VARIABLES */
 	// Reference to the list of crimes stored in CrimeLab.
