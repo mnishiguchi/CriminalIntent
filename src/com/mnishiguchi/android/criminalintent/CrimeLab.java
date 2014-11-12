@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 import android.content.Context;
+import android.util.Log;
+import android.widget.Toast;
 
 /**
  * A singleton class to keep the crime data available no matter what happens
@@ -11,31 +13,49 @@ import android.content.Context;
  */
 public class CrimeLab
 {
-	/* STATIC */
+	private static final String TAG = "CrimeLab";
+	private static final String FILENAME = "crimes.json";
+	
+	/** Hold an instance of the  CrimeLab. */
 	private static CrimeLab sCrimeLab;	
 	
 	/* INSTANCE VARIABLES */
 	private Context mAppContext;
 	private ArrayList<Crime> mCrimes;
+	private CriminalIntentJSONSerializer mSerializer;
 	
-	/** CONSTRUCTOR */
+	/** Constructor. */
 	private CrimeLab(Context appContext)
 	{
 		mAppContext = appContext;
-		mCrimes = new ArrayList<Crime>();
+		mSerializer = new CriminalIntentJSONSerializer(mAppContext, FILENAME);
 		
-		// initFakeCrimes();
+		// Load crimes from the file system.
+		try
+		{
+			mCrimes = mSerializer.loadCrimes();
+			Toast.makeText(mAppContext, "Crimes successfully loaded.",
+					Toast.LENGTH_SHORT).show();
+		}
+		catch (Exception e)
+		{
+			mCrimes = new ArrayList<Crime>();
+			Log.e(TAG, "Error loading crimes", e);
+			Toast.makeText(mAppContext, "Error loading crimes.",
+					Toast.LENGTH_SHORT).show();
+		}
 	}
 	
 	/**
-	 * @param c - This could be an Activity or another Context object like Service.
-	 * @return CrimeLab object associated with the current global context. 
+	 * Get a reference to the CrimeLab singleton.
+	 * @param context This could be an Activity or another Context object like Service.
+	 * @return the CrimeLab singleton.
 	 */
 	public static CrimeLab get(Context context)
 	{
 		if (sCrimeLab == null )  // Only the first time.
 		{
-			// Create a CrimeLab object associated with the current global context. 
+			// Create one and only instance of the CrimeLab associated with the current global context. 
 			sCrimeLab = new CrimeLab(context.getApplicationContext() );
 		}
 		return sCrimeLab;
@@ -57,7 +77,7 @@ public class CrimeLab
 	{
 		for (Crime crime : mCrimes)
 		{
-			if (crime.getId().equals(id) )
+			if (crime.getId().equals(id))
 			{
 				return crime;
 			}
@@ -75,6 +95,26 @@ public class CrimeLab
 	}
 	
 	/**
+	 * Save the data of the crimes to a file on the device's file system.
+	 */
+	public boolean saveCrimes()
+	{
+		try
+		{
+			mSerializer.saveCrimes(mCrimes);
+			//Log.d(TAG, "Crimes saved to file");
+			Toast.makeText(mAppContext, "Crimes saved to file", Toast.LENGTH_SHORT).show();
+			return true;
+		}
+		catch (Exception e)
+		{
+			//Log.e(TAG, "Error saving crimes: ", e);
+			Toast.makeText(mAppContext, "Error saving crimes", Toast.LENGTH_SHORT).show();
+			return false;
+		}
+	}
+	
+	/**
 	 * Populate the ArrayList with 100 Crime objects.
 	 */
 	private void initFakeCrimes()
@@ -86,7 +126,6 @@ public class CrimeLab
 			c.setSolved(i%2 == 0);  // Every other one
 			mCrimes.add(c);
 		}
-		
 	}
 
 }

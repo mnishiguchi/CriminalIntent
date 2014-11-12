@@ -3,15 +3,27 @@ package com.mnishiguchi.android.criminalintent;
 import java.util.Date;
 import java.util.UUID;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class Crime
 {
-	/* INSTANCE VARIABLES */
+	// FOR JSON
+	private static final String JSON_ID = "id";
+	private static final String JSON_TITLE = "title";
+	private static final String JSON_SOLVED = "solved";
+	private static final String JSON_DATE = "date";
+	
+	// INSTANCE VARIABLES
 	private UUID mId;
 	private String mTitle	;
 	private Date mDate;
 	private boolean mSolved;
 	
-	/** CONSTRUCTOR */
+	/**
+	 * Constructor. Create a default Crime object.
+	 * Used when adding a new crime.
+	 */
 	public Crime()
 	{
 		// Generate unique identifier.
@@ -21,13 +33,45 @@ public class Crime
 		mDate = new Date();
 	}
 	
+	/**
+	 * Constructor. Create a Crime object based on the passed-in JSONObject.
+	 * Used when loading crimes from the file system.
+	 * @param json a JSONObject that represents a crime.
+	 * @throws JSONException
+	 */
+	public Crime(JSONObject json) throws JSONException
+	{
+		mId = UUID.fromString(json.getString(JSON_ID));
+		if (json.has(JSON_TITLE))
+		{
+			mTitle = json.getString(JSON_TITLE);
+		}
+		mSolved = json.getBoolean(JSON_SOLVED);
+		mDate = new Date(json.getLong(JSON_DATE));
+	}
+	
+	/**
+	 * Convert a Crime into a JSONObject.
+	 */
+	public JSONObject toJSON() throws JSONException
+	{
+		JSONObject json = new JSONObject();
+		
+		// Add key-value pairs.
+		json.put(JSON_ID, mId.toString());
+		json.put(JSON_TITLE, mTitle);
+		json.put(JSON_SOLVED, mSolved);
+		json.put(JSON_DATE, mDate.getTime());
+		
+		return json;
+	}
+	
 	@Override
 	public String toString()
 	{
 		return mTitle;
 	}
 
-	/* ACCESSOR METHODS */
 	public String getTitle()
 	{
 		return mTitle;

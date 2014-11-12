@@ -38,14 +38,14 @@ public class CrimeFragment extends Fragment
 	public static final String DIALOG_OPTION_DATETIME = "date";
 	public static final int REQUEST_DATE = 0;
 	public static DateFormat DATE_FORMAT = DateFormat.getDateTimeInstance(
-	          DateFormat.LONG, DateFormat.SHORT, Locale.getDefault());
+			DateFormat.LONG, DateFormat.SHORT, Locale.getDefault());
 	
 	/* INSTANCE VARIABLES */
 	private Crime mCrime;  // Reference to the data stored in CrimeLab(model layer)
 	
 	private EditText mEtTitle;
 	private Button mBtnDate;
-	private CheckBox mCbSolved;
+	private CheckBox mCheckSolved;
 	
 	/**
 	 * Creates a new fragment instance and attaches the specified UUID as fragment's arguments.
@@ -149,9 +149,9 @@ public class CrimeFragment extends Fragment
 		
 		/* mCbSolved settings */ 
 		
-		mCbSolved = (CheckBox) v.findViewById(R.id.cb_crime_solved);
-		mCbSolved.setChecked(mCrime.isSolved() );
-		mCbSolved.setOnCheckedChangeListener( new OnCheckedChangeListener() {
+		mCheckSolved = (CheckBox) v.findViewById(R.id.cb_crime_solved);
+		mCheckSolved.setChecked(mCrime.isSolved() );
+		mCheckSolved.setOnCheckedChangeListener( new OnCheckedChangeListener() {
 			
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
@@ -163,6 +163,13 @@ public class CrimeFragment extends Fragment
 		
 		// Return the layout.
 		return v;
+	}
+	
+	@Override
+	public void onPause()
+	{
+		super.onPause();
+		CrimeLab.get(getActivity()).saveCrimes();
 	}
 	
 	/**
