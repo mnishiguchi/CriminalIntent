@@ -17,7 +17,10 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.NavUtils;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -27,12 +30,12 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
+import android.widget.Toast;
 
 public class CrimeFragment extends Fragment
 {
 	public final String TAG = "CriminalIntent";
 	
-	/* STATIC */
 	public static final String EXTRA_DATE = "com.mnishiguchi.android.criminalintent.date";
 	public static final String EXTRA_CRIME_ID = "com.mnishiguchi.android.criminalintent.crime_id";
 	public static final String DIALOG_OPTION_DATETIME = "date";
@@ -40,9 +43,10 @@ public class CrimeFragment extends Fragment
 	public static DateFormat DATE_FORMAT = DateFormat.getDateTimeInstance(
 			DateFormat.LONG, DateFormat.SHORT, Locale.getDefault());
 	
-	/* INSTANCE VARIABLES */
-	private Crime mCrime;  // Reference to the data stored in CrimeLab(model layer)
+	// Reference to a Crime object stored in CrimeLab (model layer)
+	private Crime mCrime;
 	
+	// UI components
 	private EditText mEtTitle;
 	private Button mBtnDate;
 	private CheckBox mCheckSolved;
@@ -85,6 +89,8 @@ public class CrimeFragment extends Fragment
 	public View onCreateView(LayoutInflater inflater, ViewGroup parent,
 			Bundle savedInstanceState)
 	{
+		Log.d(TAG, "Entered: onCreateView()");
+		
 		// Get reference to the layout.
 		View v = inflater.inflate(R.layout.fragment_crime, parent, false);
 		
@@ -95,6 +101,10 @@ public class CrimeFragment extends Fragment
 			if (NavUtils.getParentActivityIntent(getActivity() ) != null)
 			{
 				getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
+			}
+			else
+			{
+				Log.d(TAG, "Couldn't enable the Up button");
 			}
 		}
 		
@@ -198,22 +208,53 @@ public class CrimeFragment extends Fragment
 	}
 	
 	/**
+	 * Creates the options menu and populates it with the items defined
+	 * in res/menu/fragment_crime.xml.
+	 */
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
+	{
+		super.onCreateOptionsMenu(menu, inflater);
+		
+		// Inflate the menu; this adds items to the action bar.
+		inflater.inflate(R.menu.fragment_crime, menu);
+	}
+	
+	/**
 	 * Respond to menu selection.
 	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
-	 	switch (item.getItemId() )
+	 	// Check the selected menu item and respond to it.
+		switch (item.getItemId() )
 	 	{
 	 		// Respond to the enabled Up icon as if it were an existing options menu item.
 			case android.R.id.home:
+				
 				// If a parent activity is registered in the manifest file, move up the app hierarchy.
 				if (NavUtils.getParentActivityName(getActivity() ) != null)
 				{
 					NavUtils.navigateUpFromSameTask(getActivity() );
 				}
 				return true;  // Indicate that no further processing is necessary.
-		 			
+
+			case R.id.menu_item_delete_crime:
+				
+				// Get the crime title.
+				String crimeTitle = (mCrime.getTitle() == null || mCrime.getTitle().equals("")) ?
+						"(No title)" : mCrime.getTitle();
+				
+				// Delete the crime.
+				CrimeLab.get(getActivity()).deleteCrime(mCrime);
+				
+				// Update the pager adapter.
+				((PagerActivity)getActivity()).getPagerAdapter().notifyDataSetChanged();
+
+				// Toast a message and finish this activity.
+				Toast.makeText(getActivity(), crimeTitle +" has been deleted.", Toast.LENGTH_SHORT).show();
+				getActivity().finish();
+				
 			default:
 				return super.onOptionsItemSelected(item);
 	 	}

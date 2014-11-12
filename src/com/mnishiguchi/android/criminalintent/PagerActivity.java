@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 
 public class PagerActivity extends FragmentActivity
@@ -30,9 +31,7 @@ public class PagerActivity extends FragmentActivity
 		mCrimes = CrimeLab.get(this).getCrimes();
 		
 		setUpPagerAdapter();
-		
 		setUpInitialPagerItem();
-		
 		setUpEventListener();
 	}
 	
@@ -96,5 +95,10 @@ public class PagerActivity extends FragmentActivity
 			@Override
 			public void onPageScrollStateChanged(int arg0) { }  // unused
 		} );
+	}
+	
+	public PagerAdapter getPagerAdapter()
+	{
+		return mViewPager.getAdapter();
 	}
 }
