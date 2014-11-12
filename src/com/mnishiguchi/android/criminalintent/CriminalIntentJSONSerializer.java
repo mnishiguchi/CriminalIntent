@@ -1,7 +1,10 @@
 package com.mnishiguchi.android.criminalintent;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -15,6 +18,9 @@ import org.json.JSONException;
 import org.json.JSONTokener;
 
 import android.content.Context;
+import android.os.Environment;
+import android.support.v4.content.ContextCompat;
+import android.widget.Toast;
 
 public class CriminalIntentJSONSerializer
 {
@@ -37,12 +43,24 @@ public class CriminalIntentJSONSerializer
 	public ArrayList<Crime> loadCrimes() throws IOException, JSONException
 	{
 		ArrayList<Crime> crimes = new ArrayList<Crime>();
-		
 		BufferedReader reader = null;
+		InputStream in = null;
+		
+		// Open the file , read it, and put it into a StringBuilder.
 		try
 		{
-			// Open the file , read it, and put it into a StringBuilder.
-			InputStream in = mContext.openFileInput(mFileName);
+			// Determine whether to use internal or external storage.
+			if (isExternalStorageAvailable())
+			{
+				in = (InputStream) new FileInputStream(getExternalStoragePrivateFile());
+				Toast.makeText(mContext, "Load to External", Toast.LENGTH_SHORT).show();
+			}
+			else
+			{
+				in = mContext.openFileInput(mFileName);
+				Toast.makeText(mContext, "Load to Internal", Toast.LENGTH_SHORT).show();
+			}
+
 			reader = new BufferedReader(new InputStreamReader(in));
 			StringBuilder jsonString = new StringBuilder();
 			
@@ -92,9 +110,22 @@ public class CriminalIntentJSONSerializer
 		
 		// Write the file to disk.
 		Writer writer = null;
+		OutputStream out = null;
+		
 		try
 		{
-			OutputStream out = mContext.openFileOutput(mFileName, Context.MODE_PRIVATE);
+			// Determine whether to use internal or external storage.
+			if (isExternalStorageAvailable())
+			{
+				out = (OutputStream)new FileOutputStream(getExternalStoragePrivateFile());
+				Toast.makeText(mContext, "Write to External", Toast.LENGTH_SHORT).show();
+			}
+			else
+			{
+				out = mContext.openFileOutput(mFileName, Context.MODE_PRIVATE);
+				Toast.makeText(mContext, "Write to Internal", Toast.LENGTH_SHORT).show();
+			}
+			
 			writer = new OutputStreamWriter(out);
 			writer.write(array.toString());  // Write the array as a compact JSON string.
 		}
@@ -105,5 +136,28 @@ public class CriminalIntentJSONSerializer
 				writer.close();
 			}
 		}
+	}
+	
+	private File getExternalStoragePrivateFile()
+	{
+		// Create a path for a private file on external storage.
+		File[] directories = ContextCompat.getExternalFilesDirs(mContext, null);
+		
+		// Create a private file.
+		File file = new File(directories[0], mFileName);
+		return file;
+	}
+	
+	/**
+	 *  Checks if external storage is available for read and write.
+	 */
+	private boolean isExternalStorageAvailable()
+	{
+		String state = Environment.getExternalStorageState();
+		if (Environment.MEDIA_MOUNTED.equals(state))
+		{
+			return true;
+		}
+		return false;
 	}
 }

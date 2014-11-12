@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 import android.content.Context;
+import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -93,6 +94,30 @@ public class CrimeLab
 	{
 		mCrimes.add(crime);
 	}
+	
+	public boolean loadCrimes()
+	{
+		
+		
+		
+		// Load crimes from the file system.
+		try
+		{
+			mCrimes = mSerializer.loadCrimes();
+			Toast.makeText(mAppContext, "Crimes successfully loaded.",
+					Toast.LENGTH_SHORT).show();
+			return true;
+		}
+		catch (Exception e)
+		{
+			mCrimes = new ArrayList<Crime>();
+			Log.e(TAG, "Error loading crimes", e);
+			Toast.makeText(mAppContext, "Error loading crimes.",
+					Toast.LENGTH_SHORT).show();
+			return false;
+		}
+	}
+	
 	
 	/**
 	 * Save the data of the crimes to a file on the device's file system.
