@@ -121,11 +121,17 @@ public class CrimeFragment extends Fragment
 			}
 			
 			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count, int after) { }  // Unused
+			public void beforeTextChanged(CharSequence s, int start, int count, int after)
+			{
+				// Required, but not used in this implementation.
+			}
 			
 			@Override
-			public void afterTextChanged(Editable s) { }  // Unused
-		} );
+			public void afterTextChanged(Editable s)
+			{
+				// Required, but not used in this implementation.
+			}
+		});
 		
 		/* mBtnDate settings */ 
 		

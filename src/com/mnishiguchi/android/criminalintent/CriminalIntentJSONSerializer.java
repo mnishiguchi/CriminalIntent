@@ -20,10 +20,13 @@ import org.json.JSONTokener;
 import android.content.Context;
 import android.os.Environment;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.widget.Toast;
 
 public class CriminalIntentJSONSerializer
 {
+	public final String TAG = "CriminalIntent : " + getClass().getSimpleName();
+	
 	private Context mContext;
 	private String mFileName;
 	
@@ -159,5 +162,5 @@ public class CriminalIntentJSONSerializer
 			return true;
 		}
 		return false;
-	}
+	}	
 }

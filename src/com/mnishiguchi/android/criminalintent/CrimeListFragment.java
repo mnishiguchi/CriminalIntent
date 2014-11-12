@@ -3,9 +3,15 @@ package com.mnishiguchi.android.criminalintent;
 import java.util.ArrayList;
 
 import android.annotation.TargetApi;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.ListFragment;
 import android.view.ActionMode;
 import android.view.ContextMenu;
@@ -28,11 +34,15 @@ import android.widget.Toast;
 
 public class CrimeListFragment extends ListFragment
 {
+	public static final String PREFS_SETTINGS = "prefsSettings";
+	public static final String DATA_STORAGE_MODE = "dataStorageMode";
+	
 	// Reference to the list of crimes stored in CrimeLab.
 	private ArrayList<Crime> mCrimes;
 	
 	// The state of the Action Bar's subtitle.
 	private boolean mSubtitleVisible;
+	
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState)
@@ -240,6 +250,11 @@ public class CrimeListFragment extends ListFragment
 				}
 				return true;  // No further processing is necessary.
 				
+			case R.id.menu_item_data_storage:
+				
+				// Open AlertDialog to check user preference.
+				new DataStorageOptionsFragment().show(getFragmentManager(), null);
+				
 			default:
 				return super.onOptionsItemSelected(item);
 		}
@@ -308,6 +323,24 @@ public class CrimeListFragment extends ListFragment
 		return super.onContextItemSelected(item);
 	}
 	
+	public void restorePrefs()
+	{
+		// Restore preferences
+		//SharedPreferences settings = getActivity().getSharedPreferences(PREFS_SETTINGS, 0);
+	}
+	
+	/** Save the settings to PREFS_NAME via SharedPreferences
+	 * object when requested.
+	 */
+	public void savePrefs()
+	{
+		// get our SharedPreferences object and create an editor for it
+		//getActivity().getSharedPreferences(PREFS_SETTINGS, Context.MODE_PRIVATE)
+			//.edit()
+			//.putBoolean(DATA_STORAGE_MODE, )
+			//.commit();
+	}
+	
 	/**
 	 * A custom ArrayAdapter designed to display Crime-specific list items.
 	 */
@@ -351,6 +384,49 @@ public class CrimeListFragment extends ListFragment
 			cb_Solved.setChecked(crime.isSolved() );
 			
 			return convertView;
+		}
+	}
+	
+	private class DataStorageOptionsFragment extends DialogFragment
+	{
+		@Override
+		public Dialog onCreateDialog(Bundle savedInstanceState)
+		{
+			String[] dataStorageOptions = {"Internal Storage", "External Storage"};
+			int initialSelection = 0;
+					
+			// Use the Builder class for convenient dialog construction
+			return new AlertDialog.Builder(getActivity())
+				.setTitle("Data Storage")
+				.setPositiveButton("Set", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int id)
+					{
+						dismiss();
+					}
+				})
+				.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int id)
+					{
+						dismiss();
+					}
+				})
+				.setSingleChoiceItems(dataStorageOptions, initialSelection ,
+						new DialogInterface.OnClickListener() {
+					
+					@Override
+					public void onClick(DialogInterface dialog, int which)
+					{
+						switch (which)
+						{
+							case 1: break;
+							case 0: break;
+								default:
+						}
+					}
+				})
+				.create();
 		}
 	}
 }
