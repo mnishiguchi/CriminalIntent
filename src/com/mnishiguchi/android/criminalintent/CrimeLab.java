@@ -95,6 +95,15 @@ public class CrimeLab
 		mCrimes.add(crime);
 	}
 	
+	/**
+	 * Delete a crime from the list.
+	 * @param crime
+	 */
+	public void deleteCrime(Crime crime)
+	{
+		mCrimes.remove(crime);
+	}
+	
 	public boolean loadCrimes()
 	{
 		
@@ -117,7 +126,6 @@ public class CrimeLab
 			return false;
 		}
 	}
-	
 	
 	/**
 	 * Save the data of the crimes to a file on the device's file system.

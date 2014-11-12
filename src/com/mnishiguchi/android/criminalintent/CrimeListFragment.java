@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -14,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -22,9 +25,10 @@ import android.widget.TextView;
 
 public class CrimeListFragment extends ListFragment
 {
-	/* INSTANCE VARIABLES */
 	// Reference to the list of crimes stored in CrimeLab.
 	private ArrayList<Crime> mCrimes;
+	
+	// The state of the Action Bar's subtitle.
 	private boolean mSubtitleVisible;
 	
 	@Override
@@ -84,6 +88,12 @@ public class CrimeListFragment extends ListFragment
 				getActivity().getActionBar().setSubtitle(R.string.subtitle);
 			}
 		}
+		
+		// Register for the context menu.
+		// Get a ListView object by using android.R.id.list resource ID
+		// instead of getListView() because the layout view is not created yet.
+		ListView listView = (ListView)v.findViewById(android.R.id.list);
+		registerForContextMenu(listView);
 		
 		// Return the layout view.
 		return v;
@@ -182,6 +192,32 @@ public class CrimeListFragment extends ListFragment
 		Intent i = new Intent(getActivity(), PagerActivity.class);
 		i.putExtra(CrimeFragment.EXTRA_CRIME_ID, crime.getId() );
 		startActivityForResult(i, 0);
+	}
+	
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo)
+	{
+		getActivity().getMenuInflater().inflate(R.menu.crime_list_item_context, menu);
+	}
+	
+	@Override
+	public boolean onContextItemSelected(MenuItem item)
+	{
+		// Get the selected list item.
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo)item.getMenuInfo();
+		int position = info.position;
+		CrimeAdapter adapter = (CrimeAdapter)getListAdapter();
+		Crime selectedCrime = adapter.getItem(position);
+		
+		// Get the selected menu item and respond to it.
+		switch (item.getItemId())
+		{
+			case R.id.menu_item_delete_crime:
+				CrimeLab.get(getActivity()).deleteCrime(selectedCrime);
+				adapter.notifyDataSetChanged();
+				return true;
+		}
+		return super.onContextItemSelected(item);
 	}
 	
 	/**

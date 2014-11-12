@@ -3,23 +3,28 @@
 	<string name="app_name">CriminalIntent</string>
 	<string name="title_activity_crime">CrimeActivity</string>
 	
+	<!-- Crimes -->
 	<string name="crime_title_label">TITLE</string>
 	<string name="crime_title_hint">Enter a title for the crime.</string>
 	<string name="crime_details_label">DETAILS</string>
 	<string name="crime_solved_label">Solved?</string>
 	<string name="crimes_title">Crimes</string>
 	
+	<!-- Dialogs -->
 	<string name="date_picker_title">Date of crime</string>
 	<string name="time_picker_title">Time of crime</string>
 	<string name="datetime_picker_title">Date and Time of crime</string>
 	
-	
+	<!-- Action Bar -->
 	<string name="new_crime">New Crime</string>
 	<string name="show_subtitle">Show Subtitle</string>
 	<string name="hide_subtitle">Hide Subtitle</string>
 	<string name="subtitle">If you see something, say something.</string>
+	
+	<!-- Contextual Action -->
 	<string name="delete_crime">Delete</string>
 	
+	<!-- Empty List -->
 	<string name="btn_empty_list">Add a new crime</string>
 	<string name="tv_empty_list">This list is empty.</string>
 	
