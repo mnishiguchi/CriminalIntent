@@ -30,5 +30,6 @@
 	<!-- Empty List -->
 	<string name="btn_empty_list">Add a new crime</string>
 	<string name="tv_empty_list">This list is empty.</string>
+	<string name="take">Take</string>
 	
 </resources>

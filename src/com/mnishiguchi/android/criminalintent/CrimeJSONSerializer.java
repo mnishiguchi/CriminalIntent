@@ -23,7 +23,7 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.Toast;
 
-public class CriminalIntentJSONSerializer
+public class CrimeJSONSerializer
 {
 	public final String TAG = "CriminalIntent : " + getClass().getSimpleName();
 	
@@ -33,7 +33,7 @@ public class CriminalIntentJSONSerializer
 	/**
 	 * Constructor.
 	 */
-	public CriminalIntentJSONSerializer(Context context, String fileName)
+	public CrimeJSONSerializer(Context context, String fileName)
 	{
 		mContext = context;
 		mFileName = fileName;
@@ -52,17 +52,7 @@ public class CriminalIntentJSONSerializer
 		// Open the file , read it, and put it into a StringBuilder.
 		try
 		{
-			// Determine whether to use internal or external storage.
-			if (isExternalStorageAvailable())
-			{
-				in = (InputStream) new FileInputStream(getExternalStoragePrivateFile());
-				Toast.makeText(mContext, "Load to External", Toast.LENGTH_SHORT).show();
-			}
-			else
-			{
-				in = mContext.openFileInput(mFileName);
-				Toast.makeText(mContext, "Load to Internal", Toast.LENGTH_SHORT).show();
-			}
+			in = mContext.openFileInput(mFileName);
 
 			reader = new BufferedReader(new InputStreamReader(in));
 			StringBuilder jsonString = new StringBuilder();
@@ -114,20 +104,9 @@ public class CriminalIntentJSONSerializer
 		// Write the file to disk.
 		Writer writer = null;
 		OutputStream out = null;
-		
 		try
 		{
-			// Determine whether to use internal or external storage.
-			if (isExternalStorageAvailable())
-			{
-				out = (OutputStream)new FileOutputStream(getExternalStoragePrivateFile());
-				Toast.makeText(mContext, "Write to External", Toast.LENGTH_SHORT).show();
-			}
-			else
-			{
-				out = mContext.openFileOutput(mFileName, Context.MODE_PRIVATE);
-				Toast.makeText(mContext, "Write to Internal", Toast.LENGTH_SHORT).show();
-			}
+			out = mContext.openFileOutput(mFileName, Context.MODE_PRIVATE);
 			
 			writer = new OutputStreamWriter(out);
 			writer.write(array.toString());  // Write the array as a compact JSON string.
@@ -140,27 +119,4 @@ public class CriminalIntentJSONSerializer
 			}
 		}
 	}
-	
-	private File getExternalStoragePrivateFile()
-	{
-		// Create a path for a private file on external storage.
-		File[] directories = ContextCompat.getExternalFilesDirs(mContext, null);
-		
-		// Create a private file.
-		File file = new File(directories[0], mFileName);
-		return file;
-	}
-	
-	/**
-	 *  Checks if external storage is available for read and write.
-	 */
-	private boolean isExternalStorageAvailable()
-	{
-		String state = Environment.getExternalStorageState();
-		if (Environment.MEDIA_MOUNTED.equals(state))
-		{
-			return true;
-		}
-		return false;
-	}	
 }

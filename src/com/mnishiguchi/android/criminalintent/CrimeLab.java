@@ -23,13 +23,13 @@ public class CrimeLab
 	/* INSTANCE VARIABLES */
 	private Context mAppContext;
 	private ArrayList<Crime> mCrimes;
-	private CriminalIntentJSONSerializer mSerializer;
+	private CrimeJSONSerializer mSerializer;
 	
 	/** Constructor. */
 	private CrimeLab(Context appContext)
 	{
 		mAppContext = appContext;
-		mSerializer = new CriminalIntentJSONSerializer(mAppContext, FILENAME);
+		mSerializer = new CrimeJSONSerializer(mAppContext, FILENAME);
 		
 		// Load crimes from the file system.
 		try

@@ -34,7 +34,7 @@ import android.widget.Toast;
 
 public class CrimeFragment extends Fragment
 {
-	public final String TAG = "CriminalIntent";
+	public final String TAG = "CriminalIntent : " + getClass().getSimpleName();
 	
 	public static final String EXTRA_DATE = "com.mnishiguchi.android.criminalintent.date";
 	public static final String EXTRA_CRIME_ID = "com.mnishiguchi.android.criminalintent.crime_id";
