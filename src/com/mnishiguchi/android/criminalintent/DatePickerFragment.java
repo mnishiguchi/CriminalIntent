@@ -20,8 +20,6 @@ import android.widget.DatePicker.OnDateChangedListener;
  */
 public class DatePickerFragment extends DialogFragment
 {	
-	public final String TAG = "CriminalIntent";
-	
 	/* INSTANCE VARIABLES */
 	private Date mDate;
 	

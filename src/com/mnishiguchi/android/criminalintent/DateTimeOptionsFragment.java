@@ -11,8 +11,6 @@ import android.support.v4.app.FragmentManager;
 
 public class DateTimeOptionsFragment extends DialogFragment
 {
-	public final String TAG = "CriminalIntent";
-	
 	/* STATIC */
 	public static final String DIALOG_TIME_OR_DATE = "time or date";
 	
@@ -53,7 +51,7 @@ public class DateTimeOptionsFragment extends DialogFragment
 		
 		// Configure the AlertDialog and return it.
 		return new AlertDialog.Builder(getActivity() )
-				//.setTitle("Currently: " + CrimeFragment.DATE_FORMAT.format(mDate) )
+				.setTitle(CrimeFragment.DATE_FORMAT.format(mDate))
 				.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) { }  // Do nothing.

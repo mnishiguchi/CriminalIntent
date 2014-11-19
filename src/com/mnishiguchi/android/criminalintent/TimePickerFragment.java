@@ -16,9 +16,6 @@ import android.widget.TimePicker;
 
 public class TimePickerFragment extends DialogFragment
 {
-	public final String TAG = "CriminalIntent";
-	
-	/* INSTANCE VARIABLES */
 	private Date mDate;
 	
 	// To remember the user's input.

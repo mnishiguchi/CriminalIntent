@@ -13,8 +13,8 @@ import android.support.v4.view.ViewPager;
 
 public class PagerActivity extends FragmentActivity
 {
-	/* INSTANCE VARIABLES */
 	private ViewPager mViewPager;
+	
 	// Reference to the list of crimes stored in CrimeLab.
 	private ArrayList<Crime> mCrimes;
 	
