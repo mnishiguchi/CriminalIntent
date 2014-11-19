@@ -43,7 +43,9 @@ public class CrimeFragment extends Fragment
 	
 	public static final String EXTRA_DATE = "com.mnishiguchi.android.criminalintent.date";
 	public static final String EXTRA_CRIME_ID = "com.mnishiguchi.android.criminalintent.crime_id";
-	public static final String DIALOG_OPTION_DATETIME = "date";
+	
+	private static final String DIALOG_DATETIME = "datetime";
+	private static final String DIALOG_IMAGE = "image";
 	
 	public static final int REQUEST_DATE = 0;
 	public static final int REQUEST_PHOTO = 1;
@@ -169,7 +171,7 @@ public class CrimeFragment extends Fragment
 				dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
 				
 				// Show the DatePickerFragment.
-				dialog.show(fm, DIALOG_OPTION_DATETIME);
+				dialog.show(fm, DIALOG_DATETIME);
 			}
 		} );
 		
@@ -190,7 +192,23 @@ public class CrimeFragment extends Fragment
 		// --- Photo View ---
 		
 		mPhotoView = (ImageView)v.findViewById(R.id.crime_imageView);
-		
+		mPhotoView.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v)
+			{
+				Photo photo = mCrime.getPhoto();
+				if (null == photo) return;
+				
+				FragmentManager fm = getActivity().getSupportFragmentManager();
+				
+				// Get the absolute path for this crime's photo.
+				String path = getActivity().getFileStreamPath(photo.getFilename()).getAbsolutePath();
+				
+				// Show an ImageFragment
+				ImageFragment.newInstance(path).show(fm, DIALOG_IMAGE);
+			}
+		});
 		
 		// --- Photo Button ---
 		

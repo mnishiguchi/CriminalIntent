@@ -7,9 +7,9 @@
 		android:showAsAction="ifRoom|withText"
 		/>
 	
-	<item 	android:id="@+id/menu_item_data_storage"
+	<item 	android:id="@+id/menu_item_sample_options"
 		android:icon="@android:drawable/ic_menu_manage"
-		android:title="@string/data_storage"
+		android:title="@string/sample_options"
 		android:showAsAction="ifRoom|withText" >
 	</item>
 		

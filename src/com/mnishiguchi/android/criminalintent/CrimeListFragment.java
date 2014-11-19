@@ -34,9 +34,6 @@ import android.widget.Toast;
 
 public class CrimeListFragment extends ListFragment
 {
-	public static final String PREFS_SETTINGS = "prefsSettings";
-	public static final String DATA_STORAGE_MODE = "dataStorageMode";
-	
 	// Reference to the list of crimes stored in CrimeLab.
 	private ArrayList<Crime> mCrimes;
 	
@@ -145,6 +142,7 @@ public class CrimeListFragment extends ListFragment
 							
 							CrimeAdapter adapter = (CrimeAdapter)getListAdapter();
 							CrimeLab crimeLab = CrimeLab.get(getActivity());
+							int count = 0;
 							
 							// Iterate over the list items.
 							for (int index = adapter.getCount() - 1;
@@ -155,13 +153,17 @@ public class CrimeListFragment extends ListFragment
 								{
 									// Delete the selected items from the CrimeLab's list.
 									crimeLab.deleteCrime(adapter.getItem(index));
+									count += 1;
 								}
 							}
+							
 							// Prepare the action mode to be destroyed.
 							mode.finish();
 							
 							// Update the list.
 							adapter.notifyDataSetChanged();
+							Toast.makeText(getActivity(), count + " item(s) deleted", Toast.LENGTH_SHORT).show();
+							
 							return true;
 						
 						default:
@@ -222,7 +224,8 @@ public class CrimeListFragment extends ListFragment
 		}
 	}
 	
-	/* Responds to menu selection.
+	/* 
+	 * Responds to menu selection.
 	 */
 	@TargetApi(11)
 	@Override
@@ -231,10 +234,12 @@ public class CrimeListFragment extends ListFragment
 		switch (item.getItemId() )
 		{
 			case R.id.menu_item_new_crime:
+				
 				registerNewCrime();
 				return true;  // No further processing is necessary.
 					
 			case R.id.menu_item_show_subtitle:
+				
 				// Set the action bar's subtitle, toggling "Show subtitle" & "Hide subtitle"
 				if (getActivity().getActionBar().getSubtitle() == null)
 				{
@@ -250,10 +255,10 @@ public class CrimeListFragment extends ListFragment
 				}
 				return true;  // No further processing is necessary.
 				
-			case R.id.menu_item_data_storage:
+			case R.id.menu_item_sample_options:
 				
-				// Open AlertDialog to check user preference.
-				new DataStorageOptionsFragment().show(getFragmentManager(), null);
+				// Open AlertDialog for options.
+				new SettingsDialogFragment().show(getFragmentManager(), null);
 				
 			default:
 				return super.onOptionsItemSelected(item);
@@ -311,34 +316,14 @@ public class CrimeListFragment extends ListFragment
 		{
 			case R.id.menu_item_delete_crime:
 				
-				String crimeTitle = (selectedCrime.getTitle() == null || selectedCrime.getTitle().equals("")) ?
-						"(No title)" : selectedCrime.getTitle();
 				CrimeLab.get(getActivity()).deleteCrime(selectedCrime);
 				adapter.notifyDataSetChanged();
 				
-				Toast.makeText(getActivity(), crimeTitle +" has been deleted.", Toast.LENGTH_SHORT).show();
+				Toast.makeText(getActivity(),  "Selected item has been deleted.", Toast.LENGTH_SHORT).show();
 				
 				return true;
 		}
 		return super.onContextItemSelected(item);
-	}
-	
-	public void restorePrefs()
-	{
-		// Restore preferences
-		//SharedPreferences settings = getActivity().getSharedPreferences(PREFS_SETTINGS, 0);
-	}
-	
-	/** Save the settings to PREFS_NAME via SharedPreferences
-	 * object when requested.
-	 */
-	public void savePrefs()
-	{
-		// get our SharedPreferences object and create an editor for it
-		//getActivity().getSharedPreferences(PREFS_SETTINGS, Context.MODE_PRIVATE)
-			//.edit()
-			//.putBoolean(DATA_STORAGE_MODE, )
-			//.commit();
 	}
 	
 	/**
@@ -387,17 +372,17 @@ public class CrimeListFragment extends ListFragment
 		}
 	}
 	
-	private class DataStorageOptionsFragment extends DialogFragment
+	private class SettingsDialogFragment extends DialogFragment
 	{
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState)
 		{
-			String[] dataStorageOptions = {"Internal Storage", "External Storage"};
+			String[] options = {"Item1", "Item2", "Item3"};
 			int initialSelection = 0;
 					
 			// Use the Builder class for convenient dialog construction
 			return new AlertDialog.Builder(getActivity())
-				.setTitle("Data Storage")
+				.setTitle("Which one would you like?")
 				.setPositiveButton("Set", new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int id)
@@ -412,7 +397,7 @@ public class CrimeListFragment extends ListFragment
 						dismiss();
 					}
 				})
-				.setSingleChoiceItems(dataStorageOptions, initialSelection ,
+				.setSingleChoiceItems(options, initialSelection ,
 						new DialogInterface.OnClickListener() {
 					
 					@Override
@@ -422,7 +407,7 @@ public class CrimeListFragment extends ListFragment
 						{
 							case 1: break;
 							case 0: break;
-								default:
+							default:
 						}
 					}
 				})
