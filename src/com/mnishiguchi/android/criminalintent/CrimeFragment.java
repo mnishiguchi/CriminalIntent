@@ -1,13 +1,10 @@
 package com.mnishiguchi.android.criminalintent;
 
+import java.io.File;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
-
-import com.mnishiguchi.android.criminalintent.CrimeListFragment.DeleteConfirmationFragment;
-
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -230,7 +227,7 @@ public class CrimeFragment extends Fragment
 			@Override
 			public void onClick(View v)
 			{
-				// Start the camera.
+				// Start the camera, requesting the photo's filename, if one taken.
 				Intent i = new Intent(getActivity(), CrimeCameraActivity.class);
 				startActivityForResult(i, REQUEST_PHOTO);
 			}
@@ -270,23 +267,29 @@ public class CrimeFragment extends Fragment
 	
 	/**
 	 * Get the current crime's photo image from file storage and show it on the ImageView.
+	 * Loading images in onStart() and them unloading in onStop is a good practice.
 	 */
 	private void showPhoto()
 	{
 		Photo photo = crime.getPhoto();
-		BitmapDrawable bitmap= null;
+		BitmapDrawable bitmap = null;
 		
 		// Get a scaled bitmap.
 		if (photo != null)
 		{
-			String path = getActivity().getFileStreamPath(photo.getFilename()).getAbsolutePath();
+			// Get the absolute path of the photo file on the filesystem. 
+			String path = getActivity().getFileStreamPath(photo.getFilename())
+					.getAbsolutePath(); // Convert the path to string.
+			
+			// Get a scaled bitmap drawable based on the data in this file.
 			bitmap = PictureUtils.getScaledDrawable(getActivity(), path);
 		}
+		// Set the image on the ImageView.
 		mPhotoView.setImageDrawable(bitmap);
 	}
 	
 	/*
-	 * Have the photo ready as soon as this Fragment's view becomes visible to the user. 
+	 * Have the photo ready as soon as this Fragment's view becomes visible to the user.
 	 */
 	@Override
 	public void onStart()
@@ -296,6 +299,9 @@ public class CrimeFragment extends Fragment
 		showPhoto();
 	}
 	
+	/*
+	 * Unload the photo as soon as this Fragment's view becomes invisible to the user.
+	 */
 	@Override
 	public void onStop()
 	{
@@ -304,11 +310,12 @@ public class CrimeFragment extends Fragment
 		PictureUtils.cleanImageView(mPhotoView);
 	}
 	
-	
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent resultData)
 	{
 		if (resultCode != Activity.RESULT_OK) return;
+		
+		// --- Retrieve updated date ---
 		
 		if (requestCode == REQUEST_DATE)
 		{
@@ -321,6 +328,9 @@ public class CrimeFragment extends Fragment
 			// Set the updated date on the mBtnDate.
 			showUpdatedDate();
 		}
+		
+		// --- Retrieve filename of the photo just taken ---
+		
 		else if (requestCode == REQUEST_PHOTO)
 		{
 			String filename = resultData.getStringExtra(CrimeCameraFragment.EXTRA_PHOTO_FILENAME);
@@ -333,12 +343,8 @@ public class CrimeFragment extends Fragment
 				crime.setPhoto(photo);
 				
 				showPhoto();
-				
-				// Log.i(TAG, "filename: " + filename);
-				//Log.i(TAG, "Crime: " +  mCrime.getTitle() + " has a photo");
 			}
 		}
-		
 	}
 	
 	/**

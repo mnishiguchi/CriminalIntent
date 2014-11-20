@@ -3,6 +3,9 @@ package com.mnishiguchi.android.criminalintent;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * Creating a Photo class is useful when we need to display a caption or handling a touch event.
+ */
 public class Photo
 {
 	private static final String JSON_FILENAME ="filename";
@@ -27,7 +30,7 @@ public class Photo
 	}
 	
 	/**
-	 * Convert this Photo object into a JSON object.
+	 * Serialize this Photo into a JSON object.
 	 */
 	public JSONObject toJSON() throws JSONException
 	{

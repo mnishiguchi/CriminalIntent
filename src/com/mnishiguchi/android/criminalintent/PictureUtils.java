@@ -21,46 +21,56 @@ public class PictureUtils
 	@SuppressWarnings("deprecation")
 	public static BitmapDrawable getScaledDrawable(Activity activity, String path)
 	{
+		// Get  the dimensions of the display.
 		Display display = activity.getWindowManager().getDefaultDisplay();
 		float destWidth = display.getWidth();
 		float destHeight = display.getHeight();
 		
-		// Read in the dimensions of the image on disk.
+		// Get the dimensions of the image on disk.
 		BitmapFactory.Options options = new BitmapFactory.Options();
-		options.inJustDecodeBounds = true;
-		BitmapFactory.decodeFile(path, options);
+		options.inJustDecodeBounds = true; // No pixel data needed.
+		BitmapFactory.decodeFile(path, options); 
 		
 		float srcWidth = options.outWidth;
 		float srcHeight = options.outHeight;
 		
-		int inSampleSize = 1;
-		if (srcHeight > srcHeight || srcWidth > srcWidth)
+		// Initialize inSampleSize.
+		int inSampleSize = 1; // Read every ??? px.
+		
+		// Check if the image is larger than the display.
+		if (srcHeight > destHeight || srcWidth > destWidth)
 		{
-			if (srcWidth > srcHeight)
+			if (srcWidth > srcHeight) // Landscape
 			{
+				// Let the height match.
 				inSampleSize = Math.round(srcHeight / destHeight);
 			}
-			else
+			else // Portrait
 			{
+				// Let the width match.
 				inSampleSize = Math.round(srcWidth / destWidth);
 			}
 		}
 		
+		// Set the inSampleSize.
 		options = new BitmapFactory.Options();
 		options.inSampleSize = inSampleSize;
 		
+		// Scale down the bitmap data based on the inSampleSize.
 		Bitmap bitmap = BitmapFactory.decodeFile(path, options);
 		
+		// Create drawable from the scaled bitmap.
 		return new BitmapDrawable(activity.getResources(), bitmap);
 	}
 	
 	/**
 	 * Explicitly clean up an ImageView's BitmapDrawable, if it has one.
 	 * This can prevent the possibility of ugly memory bugs.
+	 * Loading images in onStart() and them unloading in onStop is a good practice.
 	 */
 	public static void cleanImageView(ImageView imageView)
 	{
-		// Type-checking.
+		// Ensure that the passed-in view is of type BitmapDrawable.
 		if (!(imageView.getDrawable() instanceof BitmapDrawable))
 		{
 			return;
@@ -73,8 +83,5 @@ public class PictureUtils
 		// Clear the imageView.
 		imageView.setImageDrawable(null);
 	}
-	
-	
-	
 	
 }

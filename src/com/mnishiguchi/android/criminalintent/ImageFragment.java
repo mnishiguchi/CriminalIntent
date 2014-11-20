@@ -8,6 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+/**
+ * Display a larger image.
+ */
 public class ImageFragment extends DialogFragment
 {
 	public static final String EXTRA_IMAGE_PATH = "com.mnishiguchi.android.criminalintent.image_path";
@@ -19,9 +22,11 @@ public class ImageFragment extends DialogFragment
 	 */
 	public static ImageFragment newInstance(String imagePath)
 	{
+		// Set the image's filepath on the arguments.
 		Bundle args = new Bundle();
 		args.putSerializable(EXTRA_IMAGE_PATH, imagePath);
 		
+		// Instantiate the fragment with the arguments.
 		ImageFragment fragment = new ImageFragment();
 		fragment.setArguments(args);
 		fragment.setStyle(DialogFragment.STYLE_NO_TITLE, 0);
@@ -32,10 +37,10 @@ public class ImageFragment extends DialogFragment
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState)
 	{
-		// Create an ImageView dynamically.
+		// Dynamically create an ImageView from scratch.
 		mImageView = new ImageView(getActivity());
 		
-		// Get the image's path from the arguments.
+		// Get the image's filepath from the arguments.
 		String path = (String) getArguments().getSerializable(EXTRA_IMAGE_PATH);
 		
 		// Create a scaled bitmap image based on image data that is stored in disk.. 

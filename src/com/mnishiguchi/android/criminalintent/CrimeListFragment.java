@@ -5,16 +5,12 @@ import java.util.ArrayList;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.ListFragment;
-import android.util.Log;
-import android.util.SparseArray;
 import android.view.ActionMode;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -36,7 +32,7 @@ import android.widget.Toast;
 
 public class CrimeListFragment extends ListFragment
 {
-	private static final String TAG = "tag_CrimeListFragment";
+	private static final String TAG = "CrimeListFragment";
 	
 	private static final String DIALOG_DELETE = "delete";
 	
@@ -57,8 +53,7 @@ public class CrimeListFragment extends ListFragment
 		// Store a reference to this instance.
 		sCrimeListFragment = this;
 		
-		// Notify the FragmentManager that this fragment needs to receive
-		// options menu callbacks.
+		// Notify the FragmentManager that this fragment needs to receive options menu callbacks.
 		setHasOptionsMenu(true);
 		
 		// Change what is displayed on the hosting activity's action bar.

@@ -37,7 +37,8 @@ public class CrimeCameraFragment extends Fragment
 	private View mProgressContainer;
 	
 	/*
-	 * Camera Callbacks for Camera.takePicture(...)
+	 * A Camera Callback for Camera.takePicture(...).
+	 * Show the progress indicator and intercept any touch events.
 	 */
 	private Camera.ShutterCallback mShutterCallback = new Camera.ShutterCallback() {
 
@@ -50,14 +51,16 @@ public class CrimeCameraFragment extends Fragment
 	};
 	
 	/*
-	 * Camera Callbacks for Camera.takePicture(...)
+	 * A Camera Callback for Camera.takePicture(...)
+	 * Save the picture(jpeg) to disk.
+	 * Send the result to CrimeFragment.
 	 */
 	private Camera.PictureCallback mJpegCallback = new Camera.PictureCallback() {
 
 		@Override
 		public void onPictureTaken(byte[] data, Camera camera)
 		{
-			// Create a file name.
+			// Create a file name with a random UUID.
 			String filename = UUID.randomUUID().toString() + ".jpeg";
 			
 			// Save the jpeg data to disk.
@@ -74,13 +77,13 @@ public class CrimeCameraFragment extends Fragment
 				success = false;
 			}
 			
-			if (success)
+			if (success) // Successfully saved.
 			{
 				Intent i = new Intent();
 				i.putExtra(EXTRA_PHOTO_FILENAME, filename);
 				getActivity().setResult(Activity.RESULT_OK, i);
 			}
-			else
+			else // Error occurred.
 			{
 				getActivity().setResult(Activity.RESULT_CANCELED);
 			}
@@ -167,6 +170,7 @@ public class CrimeCameraFragment extends Fragment
 				parameters.setPreviewSize(s.width, s.height);
 				
 				// Set the picture size.
+				// The camera needs to know what size picture to create.
 				s = getBestSupportedSize(parameters.getSupportedPictureSizes(), width, height);
 				parameters.setPictureSize(s.width, s.height);
 				
