@@ -6,8 +6,13 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
 
+import com.mnishiguchi.android.criminalintent.CrimeListFragment.DeleteConfirmationFragment;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.BitmapDrawable;
@@ -46,6 +51,7 @@ public class CrimeFragment extends Fragment
 	
 	private static final String DIALOG_DATETIME = "datetime";
 	private static final String DIALOG_IMAGE = "image";
+	private static final String DIALOG_DELETE = "delete";
 	
 	public static final int REQUEST_DATE = 0;
 	public static final int REQUEST_PHOTO = 1;
@@ -53,8 +59,11 @@ public class CrimeFragment extends Fragment
 	public static DateFormat DATE_FORMAT = DateFormat.getDateTimeInstance(
 			DateFormat.LONG, DateFormat.SHORT, Locale.getDefault());
 	
+	// Store reference to an instance of this fragment that is currently working..
+	private static CrimeFragment sCrimeFragment;
+		
 	// Reference to a Crime object stored in CrimeLab (model layer)
-	private Crime mCrime;
+	private Crime crime;
 	
 	// UI components
 	private EditText mEtTitle;
@@ -86,11 +95,14 @@ public class CrimeFragment extends Fragment
 	{
 		super.onCreate(savedInstanceState);
 		
+		// Store a reference to this instance.
+		sCrimeFragment = this;
+		
 		// Retrieve the arguments.
 		UUID crimeId = (UUID) getArguments().getSerializable(EXTRA_CRIME_ID);
 		
 		// Fetch the Crime based on the crimeId
-		mCrime = CrimeLab.get(getActivity() ).getCrime(crimeId);
+		crime = CrimeLab.get(getActivity() ).getCrime(crimeId);
 		
 		// Enable the options menu callback.
 		setHasOptionsMenu(true);
@@ -123,13 +135,13 @@ public class CrimeFragment extends Fragment
 		// --- Title EditText ---
 		
 		mEtTitle = (EditText) v.findViewById(R.id.et_crime_title);
-		mEtTitle.setText(mCrime.getTitle() );
+		mEtTitle.setText(crime.getTitle() );
 		mEtTitle.addTextChangedListener(new TextWatcher() {
 			
 			@Override
 			public void onTextChanged(CharSequence input, int start, int before, int count)
 			{
-				mCrime.setTitle(input.toString() );
+				crime.setTitle(input.toString() );
 			}
 			
 			@Override
@@ -160,11 +172,11 @@ public class CrimeFragment extends Fragment
 				boolean hasDateTimePicker = getResources().getBoolean(R.bool.has_datetime_picker);
 				if (hasDateTimePicker)
 				{
-					dialog = DateTimePickerFragment.newInstance(mCrime.getDate() );
+					dialog = DateTimePickerFragment.newInstance(crime.getDate() );
 				}
 				else
 				{
-					dialog = 	DateTimeOptionsFragment.newInstance(mCrime.getDate() );
+					dialog = 	DateTimeOptionsFragment.newInstance(crime.getDate() );
 				}
 				
 				// Build a connection with the dialog to get the result returned later on.
@@ -178,14 +190,14 @@ public class CrimeFragment extends Fragment
 		// --- Solved CheckBox --- 
 		
 		mCheckSolved = (CheckBox) v.findViewById(R.id.cb_crime_solved);
-		mCheckSolved.setChecked(mCrime.isSolved() );
+		mCheckSolved.setChecked(crime.isSolved() );
 		mCheckSolved.setOnCheckedChangeListener( new OnCheckedChangeListener() {
 			
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
 			{
 				// Set the crime's solved property.
-				mCrime.setSolved(isChecked);
+				crime.setSolved(isChecked);
 			}
 		} );
 		
@@ -197,7 +209,7 @@ public class CrimeFragment extends Fragment
 			@Override
 			public void onClick(View v)
 			{
-				Photo photo = mCrime.getPhoto();
+				Photo photo = crime.getPhoto();
 				if (null == photo) return;
 				
 				FragmentManager fm = getActivity().getSupportFragmentManager();
@@ -253,7 +265,7 @@ public class CrimeFragment extends Fragment
 	 */
 	private void showUpdatedDate()
 	{
-		mBtnDate.setText(DATE_FORMAT.format(mCrime.getDate() ) );
+		mBtnDate.setText(DATE_FORMAT.format(crime.getDate() ) );
 	}
 	
 	/**
@@ -261,7 +273,7 @@ public class CrimeFragment extends Fragment
 	 */
 	private void showPhoto()
 	{
-		Photo photo = mCrime.getPhoto();
+		Photo photo = crime.getPhoto();
 		BitmapDrawable bitmap= null;
 		
 		// Get a scaled bitmap.
@@ -304,7 +316,7 @@ public class CrimeFragment extends Fragment
 			Date date = (Date) resultData.getSerializableExtra(EXTRA_DATE);
 			
 			// Update the date in the model layer(CrimeLab)
-			mCrime.setDate(date);
+			crime.setDate(date);
 			
 			// Set the updated date on the mBtnDate.
 			showUpdatedDate();
@@ -318,7 +330,7 @@ public class CrimeFragment extends Fragment
 				Photo photo = new Photo(filename);
 				
 				// Attach it to the crime.
-				mCrime.setPhoto(photo);
+				crime.setPhoto(photo);
 				
 				showPhoto();
 				
@@ -363,23 +375,90 @@ public class CrimeFragment extends Fragment
 
 			case R.id.menu_item_delete_crime:
 				
-				// Get the crime title.
-				String crimeTitle = (mCrime.getTitle() == null || mCrime.getTitle().equals("")) ?
-						"(No title)" : mCrime.getTitle();
-				
-				// Delete the crime.
-				CrimeLab.get(getActivity()).deleteCrime(mCrime);
-				
-				// Update the pager adapter.
-				((PagerActivity)getActivity()).getPagerAdapter().notifyDataSetChanged();
+				// Show the delete dialog.
+				DeleteConfirmationFragment.newInstance(crime)
+					.show(getFragmentManager(), DIALOG_DELETE);
 
-				// Toast a message and finish this activity.
-				Toast.makeText(getActivity(), crimeTitle +" has been deleted.", Toast.LENGTH_SHORT).show();
-				getActivity().finish();
-				
 			default:
 				return super.onOptionsItemSelected(item);
 	 	}
+	}
+	
+	/**
+	 * Delete the currently shown Crime from CrimeLab's list. Update the Pager.
+	 * Finish this fragment.
+	 */
+	private void deleteCrime(Crime crime)
+	{
+		// Get the crime title.
+		String crimeTitle = (crime.getTitle() == null || crime.getTitle().equals("")) ?
+				"(No title)" : crime.getTitle();
+		
+		// Delete the crime.
+		CrimeLab.get(getActivity()).deleteCrime(crime);
+		
+		// Update the pager adapter.
+		((PagerActivity)getActivity()).getPagerAdapter().notifyDataSetChanged();
+
+		// Toast a message and finish this activity.
+		Toast.makeText(getActivity(), crimeTitle + " has been deleted.", Toast.LENGTH_SHORT).show();
+		getActivity().finish();
+	}
+	
+	/**
+	 * Show a confirmation message before actually deleting.
+	 */
+	public static class DeleteConfirmationFragment extends DialogFragment
+	{
+		// Store the Crime that was passed in.
+		static Crime sCrime;
+	
+		/**
+		 * Create a new instance that is capable of deleting the specified list items.
+		 */
+		static DeleteConfirmationFragment newInstance(Crime crime)
+		{
+			// Store the Crime so that we can refer to it later.
+			sCrime = crime;
+			
+			// Create a fragment.
+			DeleteConfirmationFragment fragment = new DeleteConfirmationFragment();
+			fragment.setStyle(DialogFragment.STYLE_NO_TITLE, 0);
+			
+			return fragment;
+		}
+		
+		/*
+		 * Configure the dialog.
+		 */
+		@Override
+		public Dialog onCreateDialog(Bundle savedInstanceState)
+		{
+			// Define the response to buttons.
+			DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener()
+			{ 
+				public void onClick(DialogInterface dialog, int which) 
+				{ 
+					switch (which) 
+					{ 
+						case DialogInterface.BUTTON_POSITIVE: 
+							sCrimeFragment.deleteCrime(sCrime);
+							break; 
+						case DialogInterface.BUTTON_NEGATIVE: 
+							// do nothing 
+							break; 
+					} 
+				}
+			};
+			
+			// Create and return a dialog.
+			return new AlertDialog.Builder(getActivity())
+				.setTitle("Delete")
+				.setMessage("Are you sure?")
+				.setPositiveButton("Yes", listener)
+				.setNegativeButton("Cancel", listener)
+				.create();
+		}
 	}
 
 }  // end class

@@ -13,6 +13,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.ListFragment;
+import android.util.Log;
+import android.util.SparseArray;
 import android.view.ActionMode;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -34,17 +36,26 @@ import android.widget.Toast;
 
 public class CrimeListFragment extends ListFragment
 {
+	private static final String TAG = "tag_CrimeListFragment";
+	
+	private static final String DIALOG_DELETE = "delete";
+	
+	// Store reference to the current instance to this fragment.
+	private static CrimeListFragment sCrimeListFragment;
+	
 	// Reference to the list of crimes stored in CrimeLab.
 	private ArrayList<Crime> mCrimes;
 	
 	// The state of the Action Bar's subtitle.
 	private boolean mSubtitleVisible;
 	
-	
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+		
+		// Store a reference to this instance.
+		sCrimeListFragment = this;
 		
 		// Notify the FragmentManager that this fragment needs to receive
 		// options menu callbacks.
@@ -99,16 +110,17 @@ public class CrimeListFragment extends ListFragment
 			}
 		}
 		
-		// Register for the context menu.
 		// Get a ListView object by using android.R.id.list resource ID
 		// instead of getListView() because the layout view is not created yet.
 		ListView listView = (ListView)v.findViewById(android.R.id.list);
 		
+		// --- ContextMenu ---
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB)
 		{
 			// Use the floating context menus on Froyo and Gingerbread.
 			registerForContextMenu(listView);
 		}
+		// --- Contexual Action Bar ---
 		else
 		{
 			// Use the contextual action bar on Honeycomb and higher.
@@ -140,29 +152,12 @@ public class CrimeListFragment extends ListFragment
 					{
 						case R.id.menu_item_delete_crime:
 							
-							CrimeAdapter adapter = (CrimeAdapter)getListAdapter();
-							CrimeLab crimeLab = CrimeLab.get(getActivity());
-							int count = 0;
-							
-							// Iterate over the list items.
-							for (int index = adapter.getCount() - 1;
-									index >= 0; index--)
-							{
-								// Check that  item is selected or not.
-								if (getListView().isItemChecked(index))
-								{
-									// Delete the selected items from the CrimeLab's list.
-									crimeLab.deleteCrime(adapter.getItem(index));
-									count += 1;
-								}
-							}
-							
+							// Show Delete Confirmation dialog.
+							DeleteConfirmationFragment.newInstance(getSelectedItems())
+								.show(getActivity().getSupportFragmentManager(), DIALOG_DELETE);
+
 							// Prepare the action mode to be destroyed.
 							mode.finish();
-							
-							// Update the list.
-							adapter.notifyDataSetChanged();
-							Toast.makeText(getActivity(), count + " item(s) deleted", Toast.LENGTH_SHORT).show();
 							
 							return true;
 						
@@ -258,7 +253,7 @@ public class CrimeListFragment extends ListFragment
 			case R.id.menu_item_sample_options:
 				
 				// Open AlertDialog for options.
-				new SettingsDialogFragment().show(getFragmentManager(), null);
+				new SingleChoiceOptionsFragment().show(getFragmentManager(), null);
 				
 			default:
 				return super.onOptionsItemSelected(item);
@@ -372,7 +367,121 @@ public class CrimeListFragment extends ListFragment
 		}
 	}
 	
-	private class SettingsDialogFragment extends DialogFragment
+	/**
+	 * @return an array of Crime objects that are selected.
+	 */
+	private Crime[] getSelectedItems()
+	{
+		CrimeAdapter adapter = (CrimeAdapter)getListAdapter();
+		ArrayList<Crime> list = new ArrayList<Crime>(adapter.getCount());
+		
+		// Iterate over the list items.
+		for (int index = adapter.getCount() - 1;
+				index >= 0; index--)
+		{
+			// Check that  item is selected or not.
+			if (getListView().isItemChecked(index))
+			{
+				// Add the selected items to list.
+				list.add(adapter.getItem(index));
+			} 
+		}
+		
+		// Get the size of the result.
+		int resultSize = list.size();
+		
+		// Convert to Integer array.
+		Crime[] result = new Crime[resultSize];
+		result = list.toArray(result);
+		
+		return result;
+	}
+
+	/**
+	 * Delete selected list items and update the list view.
+	 * @param selectedItems
+	 * @return the number of items deleted.
+	 */
+	private int deleteSelectedItems(Crime[] selectedItems)
+	{
+		CrimeAdapter adapter = (CrimeAdapter)getListAdapter();
+		CrimeLab crimeLab = CrimeLab.get(getActivity());
+		int count = 0;
+		
+		// Delete the selected items from the CrimeLab's list.
+		for (Crime each : selectedItems)
+		{
+			crimeLab.deleteCrime(each);
+			count += 1;
+		}
+		
+		// Update the ListView.
+		adapter.notifyDataSetChanged();
+		
+		Toast.makeText(getActivity(), count + " item(s) deleted", Toast.LENGTH_SHORT).show();
+		return count;
+	}
+	
+	/**
+	 * Show a confirmation message before actually deleting selected items.
+	 */
+	public static class DeleteConfirmationFragment extends DialogFragment
+	{
+		// Store the selected list item that was passed in.
+		static Crime[] sSelectedItems;
+		
+		/**
+		 * Create a new instance that is capable of deleting the specified list items.
+		 */
+		static DeleteConfirmationFragment newInstance(Crime[] selectedItems)
+		{
+			// Store the selected items so that we can refer to it later.
+			sSelectedItems = selectedItems;
+			
+			// Create a fragment.
+			DeleteConfirmationFragment fragment = new DeleteConfirmationFragment();
+			fragment.setStyle(DialogFragment.STYLE_NO_TITLE, 0);
+			
+			return fragment;
+		}
+		
+		/*
+		 * Configure the dialog.
+		 */
+		@Override
+		public Dialog onCreateDialog(Bundle savedInstanceState)
+		{
+			// Define the response to buttons.
+			DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener()
+			{ 
+				public void onClick(DialogInterface dialog, int which) 
+				{ 
+					switch (which) 
+					{ 
+						case DialogInterface.BUTTON_POSITIVE: 
+							sCrimeListFragment.deleteSelectedItems(sSelectedItems);
+							break; 
+						case DialogInterface.BUTTON_NEGATIVE: 
+							// do nothing 
+							break; 
+					} 
+				}
+			};
+			
+			// Create and return a dialog.
+			return new AlertDialog.Builder(getActivity())
+				.setTitle("Delete")
+				.setMessage("Are you sure?")
+				.setPositiveButton("Yes", listener)
+				.setNegativeButton("Cancel", listener)
+				.create();
+		}
+	}
+	
+	/**
+	 * A dialog to show list of single-choice options.
+	 */
+	public static class SingleChoiceOptionsFragment extends DialogFragment
 	{
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState)
@@ -387,14 +496,14 @@ public class CrimeListFragment extends ListFragment
 					@Override
 					public void onClick(DialogInterface dialog, int id)
 					{
-						dismiss();
+						// Do something.
 					}
 				})
 				.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int id)
 					{
-						dismiss();
+						// Do something.
 					}
 				})
 				.setSingleChoiceItems(options, initialSelection ,
@@ -405,8 +514,10 @@ public class CrimeListFragment extends ListFragment
 					{
 						switch (which)
 						{
-							case 1: break;
-							case 0: break;
+							case 1: // Do something.
+								break;
+							case 0: // Do something.
+								break;
 							default:
 						}
 					}
