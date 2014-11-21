@@ -72,7 +72,6 @@ public class CrimeListFragment extends ListFragment
 		The default implementation of a ListFragment inflates a layout that
 		defines a full screen ListView. */
 	
-	//@TargetApi(11)
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup parent,
 			Bundle savedInstanceState)
@@ -91,15 +90,11 @@ public class CrimeListFragment extends ListFragment
 			}
 		});
 		
-		// Set the subtitle if it was visible before the rotation.
-		//if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-		//{
-			if (mSubtitleVisible)
-			{
-				getActivity().getActionBar().setSubtitle(R.string.subtitle);
-			}
-		//}
-		
+		if (mSubtitleVisible)
+		{
+			getActivity().getActionBar().setSubtitle(R.string.subtitle);
+		}
+		// Note:
 		// Get a ListView object by using android.R.id.list resource ID
 		// instead of getListView() because the layout view is not created yet.
 		ListView listView = (ListView)v.findViewById(android.R.id.list);

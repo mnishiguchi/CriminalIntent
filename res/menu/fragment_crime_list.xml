@@ -10,8 +10,12 @@
 	<item 	android:id="@+id/menu_item_sample_options"
 		android:icon="@android:drawable/ic_menu_manage"
 		android:title="@string/sample_options"
-		android:showAsAction="never"
-		/>
+		android:showAsAction="ifRoom|withText" >
+	</item>
 		
+	<item android:id="@+id/menu_item_show_subtitle"
+		android:title="@string/show_subtitle"
+		android:showAsAction="ifRoom"
+		/>
 </menu>
 

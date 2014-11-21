@@ -5,10 +5,14 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
+
+import com.mnishiguchi.android.criminalintent.CrimeListFragment.DeleteConfirmationFragment;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -23,12 +27,14 @@ import android.support.v4.app.NavUtils;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -195,6 +201,7 @@ public class CrimeFragment extends Fragment
 		
 		// --- Photo View ---
 		
+		// Short click => Show the photo in full size.
 		mPhotoView = (ImageView)v.findViewById(R.id.crime_imageView);
 		mPhotoView.setOnClickListener(new View.OnClickListener() {
 			
@@ -211,6 +218,64 @@ public class CrimeFragment extends Fragment
 				
 				// Show an ImageFragment
 				ImageFragment.newInstance(path).show(fm, DIALOG_IMAGE);
+			}
+		});
+
+		// Long click => Contextual action for deleting photo.
+		final ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
+
+			@Override
+			public boolean onCreateActionMode(ActionMode mode, Menu menu)
+			{
+				// Inflate the menu using a special inflater defined in the ActionMode class.
+				MenuInflater inflater = mode.getMenuInflater();
+				inflater.inflate(R.menu.crime_photo_context, menu);
+				return true;
+			}
+			
+			@Override
+			public boolean onPrepareActionMode(ActionMode mode, Menu menu)
+			{
+				// Required, but not used in this implementation.
+				return false;
+			}
+			
+			@Override
+			public boolean onActionItemClicked(ActionMode mode, MenuItem item)
+			{
+				switch (item.getItemId())
+				{
+					case R.id.menu_item_delete_photo: // Delete menu item.
+						
+						// Show Delete Confirmation dialog.
+						//deletePhoto(crime.getPhoto());
+						Toast.makeText(getActivity(), "Delete Action clicked", Toast.LENGTH_SHORT).show();
+
+						// Prepare the action mode to be destroyed.
+						mode.finish(); // Action picked, so close the CAB
+						return true;
+					
+					default:
+						return false;
+				}
+			}
+
+			@Override
+			public void onDestroyActionMode(ActionMode mode)
+			{
+				// Required, but not used in this implementation.
+			}
+		};
+		
+		// Listen for long clicks. Start the CAB.
+		mPhotoView.setOnLongClickListener(new OnLongClickListener() {
+
+			@Override
+			public boolean onLongClick(View v)
+			{
+				// Show the Contexual Action Bar.
+				getActivity().startActionMode(actionModeCallback);
+				return true; // Long click was consumed.
 			}
 		});
 		
@@ -249,6 +314,7 @@ public class CrimeFragment extends Fragment
 	public void onPause()
 	{
 		super.onPause();
+		
 		CrimeLab.get(getActivity()).saveCrimes();
 	}
 	
@@ -377,7 +443,7 @@ public class CrimeFragment extends Fragment
 			case R.id.menu_item_delete_crime:
 				
 				// Show the delete dialog.
-				DeleteConfirmationFragment.newInstance(crime)
+				DeleteConfirmationFragment.toDeleteCrime(crime)
 					.show(getFragmentManager(), DIALOG_DELETE);
 
 			default:
@@ -407,20 +473,54 @@ public class CrimeFragment extends Fragment
 	}
 	
 	/**
+	 * Delete from disk and from CrimeLab  the photo of the currently shown Crime.
+	 */
+	private void deletePhoto(Photo photo)
+	{
+		// TODO
+		
+	}
+	
+	/**
 	 * Show a confirmation message before actually deleting.
 	 */
 	public static class DeleteConfirmationFragment extends DialogFragment
 	{
 		// Store the Crime that was passed in.
 		static Crime sCrime;
+		static boolean wantsToDeleteCrime = false;
+		static boolean wantsToDeletePhoto = false;
 	
 		/**
 		 * Create a new instance that is capable of deleting the specified list items.
 		 */
-		static DeleteConfirmationFragment newInstance(Crime crime)
+		static DeleteConfirmationFragment toDeleteCrime(Crime crime)
 		{
 			// Store the Crime so that we can refer to it later.
 			sCrime = crime;
+			
+			// Configure
+			wantsToDeleteCrime = true;
+			wantsToDeletePhoto = true;
+			
+			// Create a fragment.
+			DeleteConfirmationFragment fragment = new DeleteConfirmationFragment();
+			fragment.setStyle(DialogFragment.STYLE_NO_TITLE, 0);
+			
+			return fragment;
+		}
+		
+		/**
+		 * Create a new instance that is capable of deleting the specified list items.
+		 */
+		static DeleteConfirmationFragment toDeletePhoto(Crime crime)
+		{
+			// Store the Crime so that we can refer to it later.
+			sCrime = crime;
+			
+			// Configure.
+			wantsToDeleteCrime = false;
+			wantsToDeletePhoto = true;
 			
 			// Create a fragment.
 			DeleteConfirmationFragment fragment = new DeleteConfirmationFragment();
@@ -443,7 +543,17 @@ public class CrimeFragment extends Fragment
 					switch (which) 
 					{ 
 						case DialogInterface.BUTTON_POSITIVE: 
-							sCrimeFragment.deleteCrime(sCrime);
+							if (wantsToDeleteCrime)
+							{
+								sCrimeFragment.deleteCrime(sCrime);
+								Log.d(TAG, "wantsToDeleteCrime");
+							}
+							if (wantsToDeletePhoto)
+							{
+								Photo photo = sCrime.getPhoto();
+								sCrimeFragment.deletePhoto(photo);
+								Log.d(TAG, "wantsToDeletePhoto");
+							}
 							break; 
 						case DialogInterface.BUTTON_NEGATIVE: 
 							// do nothing 
