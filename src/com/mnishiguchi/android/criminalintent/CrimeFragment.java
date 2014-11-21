@@ -105,7 +105,6 @@ public class CrimeFragment extends Fragment
 		setHasOptionsMenu(true);
 	}
 	
-	@TargetApi(11)
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup parent,
 			Bundle savedInstanceState)
@@ -115,18 +114,14 @@ public class CrimeFragment extends Fragment
 		// Get reference to the layout.
 		View v = inflater.inflate(R.layout.fragment_crime, parent, false);
 		
-		// Turn on the Up button.
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+		// If a parent activity is registered in the manifest file, enable the Up button.
+		if (NavUtils.getParentActivityIntent(getActivity() ) != null)
 		{
-			// If a parent activity is registered in the manifest file, enable the Up button.
-			if (NavUtils.getParentActivityIntent(getActivity() ) != null)
-			{
-				getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
-			}
-			else
-			{
-				Log.d(TAG, "Couldn't enable the Up button");
-			}
+			getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
+		}
+		else
+		{
+			Log.d(TAG, "Couldn't enable the Up button");
 		}
 		
 		// --- Title EditText ---

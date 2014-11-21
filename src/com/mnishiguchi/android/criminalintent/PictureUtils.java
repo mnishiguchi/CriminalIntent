@@ -3,6 +3,7 @@ package com.mnishiguchi.android.criminalintent;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.view.Display;
 import android.widget.ImageView;
@@ -18,13 +19,14 @@ public class PictureUtils
 	/**
 	 * Get a BitmapDrawable from a local file that is scaled down to fit the current Window size.
 	 */
-	@SuppressWarnings("deprecation")
 	public static BitmapDrawable getScaledDrawable(Activity activity, String path)
 	{
 		// Get  the dimensions of the display.
 		Display display = activity.getWindowManager().getDefaultDisplay();
-		float destWidth = display.getWidth();
-		float destHeight = display.getHeight();
+		Point size = new Point();
+		display.getSize(size);
+		float destWidth = size.x;
+		float destHeight = size.y;
 		
 		// Get the dimensions of the image on disk.
 		BitmapFactory.Options options = new BitmapFactory.Options();

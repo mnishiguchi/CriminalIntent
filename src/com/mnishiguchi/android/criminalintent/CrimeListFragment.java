@@ -2,18 +2,14 @@ package com.mnishiguchi.android.criminalintent;
 
 import java.util.ArrayList;
 
-import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.ListFragment;
 import android.view.ActionMode;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,7 +18,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AbsListView.MultiChoiceModeListener;
-import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -77,7 +72,7 @@ public class CrimeListFragment extends ListFragment
 		The default implementation of a ListFragment inflates a layout that
 		defines a full screen ListView. */
 	
-	@TargetApi(11)
+	//@TargetApi(11)
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup parent,
 			Bundle savedInstanceState)
@@ -97,85 +92,76 @@ public class CrimeListFragment extends ListFragment
 		});
 		
 		// Set the subtitle if it was visible before the rotation.
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-		{
+		//if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+		//{
 			if (mSubtitleVisible)
 			{
 				getActivity().getActionBar().setSubtitle(R.string.subtitle);
 			}
-		}
+		//}
 		
 		// Get a ListView object by using android.R.id.list resource ID
 		// instead of getListView() because the layout view is not created yet.
 		ListView listView = (ListView)v.findViewById(android.R.id.list);
 		
-		// --- ContextMenu ---
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB)
-		{
-			// Use the floating context menus on Froyo and Gingerbread.
-			registerForContextMenu(listView);
-		}
 		// --- Contexual Action Bar ---
-		else
-		{
-			// Use the contextual action bar on Honeycomb and higher.
-			listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
-			
-			// Define responce to multi-choice.
-			listView.setMultiChoiceModeListener(new MultiChoiceModeListener() {
-
-				@Override
-				public boolean onCreateActionMode(ActionMode mode, Menu menu)
-				{
-					// Inflate the menu using a special inflater defined in the ActionMode class.
-					MenuInflater inflater = mode.getMenuInflater();
-					inflater.inflate(R.menu.crime_list_item_context, menu);
-					return true;
-				}
-				
-				@Override
-				public boolean onPrepareActionMode(ActionMode mode, Menu menu)
-				{
-					// Required, but not used in this implementation.
-					return false;
-				}
-
-				@Override
-				public boolean onActionItemClicked(ActionMode mode, MenuItem item)
-				{
-					switch (item.getItemId())
-					{
-						case R.id.menu_item_delete_crime:
-							
-							// Show Delete Confirmation dialog.
-							DeleteConfirmationFragment.newInstance(getSelectedItems())
-								.show(getActivity().getSupportFragmentManager(), DIALOG_DELETE);
-
-							// Prepare the action mode to be destroyed.
-							mode.finish();
-							
-							return true;
-						
-						default:
-							return false;
-					}
-				}
-
-				@Override
-				public void onDestroyActionMode(ActionMode mode)
-				{
-					// Required, but not used in this implementation.
-				}
-
-				@Override
-				public void onItemCheckedStateChanged(ActionMode mode,
-						int position, long id, boolean checked)
-				{
-					// Required, but not used in this implementation.
-				}
-			});
-		}
 		
+		// Define responce to multi-choice.
+		listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+		
+		listView.setMultiChoiceModeListener(new MultiChoiceModeListener() {
+
+			@Override
+			public boolean onCreateActionMode(ActionMode mode, Menu menu)
+			{
+				// Inflate the menu using a special inflater defined in the ActionMode class.
+				MenuInflater inflater = mode.getMenuInflater();
+				inflater.inflate(R.menu.crime_list_item_context, menu);
+				return true;
+			}
+				
+			@Override
+			public boolean onPrepareActionMode(ActionMode mode, Menu menu)
+			{
+				// Required, but not used in this implementation.
+				return false;
+			}
+
+			@Override
+			public boolean onActionItemClicked(ActionMode mode, MenuItem item)
+			{
+				switch (item.getItemId())
+				{
+					case R.id.menu_item_delete_crime:
+						
+						// Show Delete Confirmation dialog.
+						DeleteConfirmationFragment.newInstance(getSelectedItems())
+							.show(getActivity().getSupportFragmentManager(), DIALOG_DELETE);
+
+						// Prepare the action mode to be destroyed.
+						mode.finish();
+						
+						return true;
+					
+					default:
+						return false;
+				}
+			}
+
+			@Override
+			public void onDestroyActionMode(ActionMode mode)
+			{
+				// Required, but not used in this implementation.
+			}
+
+			@Override
+			public void onItemCheckedStateChanged(ActionMode mode,
+					int position, long id, boolean checked)
+			{
+				// Required, but not used in this implementation.
+			}
+		});
+
 		// Return the layout view.
 		return v;
 	}
@@ -217,7 +203,6 @@ public class CrimeListFragment extends ListFragment
 	/* 
 	 * Responds to menu selection.
 	 */
-	@TargetApi(11)
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -280,40 +265,6 @@ public class CrimeListFragment extends ListFragment
 		Intent i = new Intent(getActivity(), PagerActivity.class);
 		i.putExtra(CrimeFragment.EXTRA_CRIME_ID, crime.getId() );
 		startActivityForResult(i, 0);
-	}
-	
-	/* Respond to a long click on a list item. Open the context menu. 
-	 */
-	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo)
-	{
-		getActivity().getMenuInflater().inflate(R.menu.crime_list_item_context, menu);
-	}
-	
-	@Override
-	public boolean onContextItemSelected(MenuItem item)
-	{
-		// Get the selected list position.
-		AdapterContextMenuInfo info = (AdapterContextMenuInfo)item.getMenuInfo();
-		int position = info.position;
-		
-		// Get the selected list item.
-		CrimeAdapter adapter = (CrimeAdapter)getListAdapter();
-		Crime selectedCrime = adapter.getItem(position);
-		
-		// Get the selected menu item and respond to it.
-		switch (item.getItemId())
-		{
-			case R.id.menu_item_delete_crime:
-				
-				CrimeLab.get(getActivity()).deleteCrime(selectedCrime);
-				adapter.notifyDataSetChanged();
-				
-				Toast.makeText(getActivity(),  "Selected item has been deleted.", Toast.LENGTH_SHORT).show();
-				
-				return true;
-		}
-		return super.onContextItemSelected(item);
 	}
 	
 	/**

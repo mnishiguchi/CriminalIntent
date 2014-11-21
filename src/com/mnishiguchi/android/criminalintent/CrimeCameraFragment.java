@@ -5,14 +5,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -21,8 +18,6 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Button;
 
 public class CrimeCameraFragment extends Fragment
@@ -91,7 +86,6 @@ public class CrimeCameraFragment extends Fragment
 		}
 	};
 	
-	@SuppressWarnings("deprecation")
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState)
 	{
@@ -123,13 +117,6 @@ public class CrimeCameraFragment extends Fragment
 		
 		// The Camera sends image data to the Surface via SurfaceHolder.
 		SurfaceHolder holder = mSurfaceView.getHolder();
-		
-		// Deprecated but required for Camera Preview to work on pre-3.0 devices.
-		if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB)
-		{
-			holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-		}
-		
 		holder.addCallback(new SurfaceHolder.Callback() {
 			
 			@Override
@@ -198,7 +185,6 @@ public class CrimeCameraFragment extends Fragment
 		super.onResume();
 		
 		mCamera = Camera.open(0);
-	
 	}
 	
 	@Override
