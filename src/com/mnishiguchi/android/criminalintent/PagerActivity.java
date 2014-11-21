@@ -30,6 +30,7 @@ public class PagerActivity extends FragmentActivity
 		// Get the list of crimes via the CrimeLab singleton.
 		mCrimes = CrimeLab.get(this).getCrimes();
 		
+		// Configuration.
 		setUpPagerAdapter();
 		setUpInitialPagerItem();
 		setUpEventListener();
@@ -39,6 +40,7 @@ public class PagerActivity extends FragmentActivity
 	{
 		FragmentManager fm = getSupportFragmentManager();
 		mViewPager.setAdapter( new FragmentStatePagerAdapter(fm) {
+			
 			@Override
 			public int getCount()
 			{
@@ -55,7 +57,7 @@ public class PagerActivity extends FragmentActivity
 				Crime crime = mCrimes.get(position);
 				return CrimeFragment.newInstance(crime.getId() );
 			}
-		} );
+		});
 	}
 	
 	/**
@@ -78,6 +80,7 @@ public class PagerActivity extends FragmentActivity
 	private void setUpEventListener()
 	{
 		mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+			
 			@Override
 			public void onPageSelected(int position)
 			{
@@ -94,7 +97,7 @@ public class PagerActivity extends FragmentActivity
 			
 			@Override
 			public void onPageScrollStateChanged(int arg0) { }  // unused
-		} );
+		});
 	}
 	
 	public PagerAdapter getPagerAdapter()

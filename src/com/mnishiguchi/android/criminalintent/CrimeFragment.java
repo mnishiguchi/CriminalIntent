@@ -6,13 +6,9 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
 
-import com.mnishiguchi.android.criminalintent.CrimeListFragment.DeleteConfirmationFragment;
-
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -74,6 +70,9 @@ public class CrimeFragment extends Fragment
 	private CheckBox mCheckSolved;
 	private ImageView mPhotoView;
 	private ImageButton mBtnPhoto;
+	
+	// Reference to CAB.
+	private ActionMode mMode;
 	
 	/**
 	 * Creates a new fragment instance and attaches the specified UUID as fragment's arguments.
@@ -227,6 +226,9 @@ public class CrimeFragment extends Fragment
 			@Override
 			public boolean onCreateActionMode(ActionMode mode, Menu menu)
 			{
+				// Remember reference to action mode.
+				mMode = mode;
+				
 				// Inflate the menu using a special inflater defined in the ActionMode class.
 				MenuInflater inflater = mode.getMenuInflater();
 				inflater.inflate(R.menu.crime_photo_context, menu);
@@ -247,9 +249,8 @@ public class CrimeFragment extends Fragment
 				{
 					case R.id.menu_item_delete_photo: // Delete menu item.
 						
-						// Show Delete Confirmation dialog.
-						//deletePhoto(crime.getPhoto());
-						Toast.makeText(getActivity(), "Delete Action clicked", Toast.LENGTH_SHORT).show();
+						deletePhoto();
+						//showToast("Delete Action clicked");
 
 						// Prepare the action mode to be destroyed.
 						mode.finish(); // Action picked, so close the CAB
@@ -273,8 +274,16 @@ public class CrimeFragment extends Fragment
 			@Override
 			public boolean onLongClick(View v)
 			{
-				// Show the Contexual Action Bar.
-				getActivity().startActionMode(actionModeCallback);
+				boolean hasDrawable = (mPhotoView.getDrawable() != null);
+				
+				showToast("hasDrawable: " + hasDrawable);
+				
+				if (hasDrawable)
+				{
+					// Show the Contexual Action Bar.
+					getActivity().startActionMode(actionModeCallback);
+				}
+				
 				return true; // Long click was consumed.
 			}
 		});
@@ -308,6 +317,14 @@ public class CrimeFragment extends Fragment
 		
 		// Return the layout.
 		return v;
+	}
+	
+	public void finishCAB()
+	{
+		if (mMode != null) 
+		 {
+			mMode.finish();
+		 }
 	}
 	
 	@Override
@@ -453,7 +470,7 @@ public class CrimeFragment extends Fragment
 	
 	/**
 	 * Delete the currently shown Crime from CrimeLab's list. Update the Pager.
-	 * Finish this fragment.
+	 * Finish this fragment. Show a toast message.
 	 */
 	private void deleteCrime(Crime crime)
 	{
@@ -468,17 +485,37 @@ public class CrimeFragment extends Fragment
 		((PagerActivity)getActivity()).getPagerAdapter().notifyDataSetChanged();
 
 		// Toast a message and finish this activity.
-		Toast.makeText(getActivity(), crimeTitle + " has been deleted.", Toast.LENGTH_SHORT).show();
+		showToast(crimeTitle + " has been deleted.");
 		getActivity().finish();
 	}
 	
 	/**
 	 * Delete from disk and from CrimeLab  the photo of the currently shown Crime.
+	 *  Show a toast message.
 	 */
-	private void deletePhoto(Photo photo)
+	private boolean deletePhoto()
 	{
-		// TODO
+		if (null == crime.getPhoto())
+		{
+			showToast("Couldn't delete the photo");
+			return false; // Fail.
+		}
 		
+		// Get the image data file on disk.
+		String path = getActivity().getFileStreamPath(crime.getPhoto().getFilename()).getAbsolutePath();
+		File imageFile = new File(path);
+		
+		// Delete the file
+		imageFile.delete();
+		
+		// Set the reference to null.
+		crime.setPhoto(null);
+		
+		// Clean up the ImageView.
+		PictureUtils.cleanImageView(mPhotoView);
+		
+		showToast("1 photo deleted");
+		return true; // Success.
 	}
 	
 	/**
@@ -488,8 +525,6 @@ public class CrimeFragment extends Fragment
 	{
 		// Store the Crime that was passed in.
 		static Crime sCrime;
-		static boolean wantsToDeleteCrime = false;
-		static boolean wantsToDeletePhoto = false;
 	
 		/**
 		 * Create a new instance that is capable of deleting the specified list items.
@@ -498,29 +533,6 @@ public class CrimeFragment extends Fragment
 		{
 			// Store the Crime so that we can refer to it later.
 			sCrime = crime;
-			
-			// Configure
-			wantsToDeleteCrime = true;
-			wantsToDeletePhoto = true;
-			
-			// Create a fragment.
-			DeleteConfirmationFragment fragment = new DeleteConfirmationFragment();
-			fragment.setStyle(DialogFragment.STYLE_NO_TITLE, 0);
-			
-			return fragment;
-		}
-		
-		/**
-		 * Create a new instance that is capable of deleting the specified list items.
-		 */
-		static DeleteConfirmationFragment toDeletePhoto(Crime crime)
-		{
-			// Store the Crime so that we can refer to it later.
-			sCrime = crime;
-			
-			// Configure.
-			wantsToDeleteCrime = false;
-			wantsToDeletePhoto = true;
 			
 			// Create a fragment.
 			DeleteConfirmationFragment fragment = new DeleteConfirmationFragment();
@@ -543,18 +555,11 @@ public class CrimeFragment extends Fragment
 					switch (which) 
 					{ 
 						case DialogInterface.BUTTON_POSITIVE: 
-							if (wantsToDeleteCrime)
-							{
-								sCrimeFragment.deleteCrime(sCrime);
-								Log.d(TAG, "wantsToDeleteCrime");
-							}
-							if (wantsToDeletePhoto)
-							{
-								Photo photo = sCrime.getPhoto();
-								sCrimeFragment.deletePhoto(photo);
-								Log.d(TAG, "wantsToDeletePhoto");
-							}
+
+							sCrimeFragment.deleteCrime(sCrime);
+							Log.d(TAG, "wantsToDeleteCrime");
 							break; 
+							
 						case DialogInterface.BUTTON_NEGATIVE: 
 							// do nothing 
 							break; 
@@ -572,4 +577,11 @@ public class CrimeFragment extends Fragment
 		}
 	}
 
+	/**
+	 * Show a toast message.
+	 */
+	private void showToast(String msg)
+	{
+		Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
+	}
 }  // end class
