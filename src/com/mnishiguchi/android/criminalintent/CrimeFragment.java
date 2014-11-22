@@ -43,7 +43,7 @@ import android.widget.Toast;
 
 public class CrimeFragment extends Fragment
 {
-	private static final String TAG = "tag_CrimeFragment";
+	private static final String TAG = "CriminalIntent.CrimeFragment";
 	
 	public static final String EXTRA_DATE = "com.mnishiguchi.android.criminalintent.date";
 	public static final String EXTRA_CRIME_ID = "com.mnishiguchi.android.criminalintent.crime_id";
@@ -62,7 +62,7 @@ public class CrimeFragment extends Fragment
 	private static CrimeFragment sCrimeFragment;
 		
 	// Reference to a Crime object stored in CrimeLab (model layer)
-	private Crime crime;
+	private Crime mCrime;
 	
 	// UI components
 	private EditText mEtTitle;
@@ -104,7 +104,7 @@ public class CrimeFragment extends Fragment
 		UUID crimeId = (UUID) getArguments().getSerializable(EXTRA_CRIME_ID);
 		
 		// Fetch the Crime based on the crimeId
-		crime = CrimeLab.get(getActivity() ).getCrime(crimeId);
+		mCrime = CrimeLab.get(getActivity() ).getCrime(crimeId);
 		
 		// Enable the options menu callback.
 		setHasOptionsMenu(true);
@@ -132,13 +132,13 @@ public class CrimeFragment extends Fragment
 		// --- Title EditText ---
 		
 		mEtTitle = (EditText) v.findViewById(R.id.et_crime_title);
-		mEtTitle.setText(crime.getTitle() );
+		mEtTitle.setText(mCrime.getTitle() );
 		mEtTitle.addTextChangedListener(new TextWatcher() {
 			
 			@Override
 			public void onTextChanged(CharSequence input, int start, int before, int count)
 			{
-				crime.setTitle(input.toString() );
+				mCrime.setTitle(input.toString() );
 			}
 			
 			@Override
@@ -169,11 +169,11 @@ public class CrimeFragment extends Fragment
 				boolean hasDateTimePicker = getResources().getBoolean(R.bool.has_datetime_picker);
 				if (hasDateTimePicker)
 				{
-					dialog = DateTimePickerFragment.newInstance(crime.getDate() );
+					dialog = DateTimePickerFragment.newInstance(mCrime.getDate() );
 				}
 				else
 				{
-					dialog = 	DateTimeOptionsFragment.newInstance(crime.getDate() );
+					dialog = 	DateTimeOptionsFragment.newInstance(mCrime.getDate() );
 				}
 				
 				// Build a connection with the dialog to get the result returned later on.
@@ -187,14 +187,14 @@ public class CrimeFragment extends Fragment
 		// --- Solved CheckBox --- 
 		
 		mCheckSolved = (CheckBox) v.findViewById(R.id.cb_crime_solved);
-		mCheckSolved.setChecked(crime.isSolved() );
+		mCheckSolved.setChecked(mCrime.isSolved() );
 		mCheckSolved.setOnCheckedChangeListener( new OnCheckedChangeListener() {
 			
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
 			{
 				// Set the crime's solved property.
-				crime.setSolved(isChecked);
+				mCrime.setSolved(isChecked);
 			}
 		} );
 		
@@ -207,7 +207,7 @@ public class CrimeFragment extends Fragment
 			@Override
 			public void onClick(View v)
 			{
-				Photo photo = crime.getPhoto();
+				Photo photo = mCrime.getPhoto();
 				if (null == photo) return;
 				
 				FragmentManager fm = getActivity().getSupportFragmentManager();
@@ -319,18 +319,33 @@ public class CrimeFragment extends Fragment
 		return v;
 	}
 	
+	/**
+	 * Remove the Contextual Action Bar if any.
+	 */
 	public void finishCAB()
 	{
 		if (mMode != null) 
 		 {
 			mMode.finish();
+			mMode = null;
 		 }
+	}
+	
+	@Override
+	public void setUserVisibleHint(boolean isVisibleToUser)
+	{
+		super.setUserVisibleHint(isVisibleToUser);
+		if (!isVisibleToUser)
+		{
+			finishCAB();
+		}
 	}
 	
 	@Override
 	public void onPause()
 	{
 		super.onPause();
+		Log.d(TAG, "onPause()");
 		
 		CrimeLab.get(getActivity()).saveCrimes();
 	}
@@ -340,7 +355,7 @@ public class CrimeFragment extends Fragment
 	 */
 	private void showUpdatedDate()
 	{
-		mBtnDate.setText(DATE_FORMAT.format(crime.getDate() ) );
+		mBtnDate.setText(DATE_FORMAT.format(mCrime.getDate() ) );
 	}
 	
 	/**
@@ -349,7 +364,7 @@ public class CrimeFragment extends Fragment
 	 */
 	private void showPhoto()
 	{
-		Photo photo = crime.getPhoto();
+		Photo photo = mCrime.getPhoto();
 		BitmapDrawable bitmap = null;
 		
 		// Get a scaled bitmap.
@@ -401,7 +416,7 @@ public class CrimeFragment extends Fragment
 			Date date = (Date) resultData.getSerializableExtra(EXTRA_DATE);
 			
 			// Update the date in the model layer(CrimeLab)
-			crime.setDate(date);
+			mCrime.setDate(date);
 			
 			// Set the updated date on the mBtnDate.
 			showUpdatedDate();
@@ -418,7 +433,7 @@ public class CrimeFragment extends Fragment
 				Photo photo = new Photo(filename);
 				
 				// Attach it to the crime.
-				crime.setPhoto(photo);
+				mCrime.setPhoto(photo);
 				
 				showPhoto();
 			}
@@ -460,7 +475,7 @@ public class CrimeFragment extends Fragment
 			case R.id.menu_item_delete_crime:
 				
 				// Show the delete dialog.
-				DeleteConfirmationFragment.toDeleteCrime(crime)
+				DeleteConfirmationFragment.toDeleteCrime(mCrime)
 					.show(getFragmentManager(), DIALOG_DELETE);
 
 			default:
@@ -495,21 +510,21 @@ public class CrimeFragment extends Fragment
 	 */
 	private boolean deletePhoto()
 	{
-		if (null == crime.getPhoto())
+		if (null == mCrime.getPhoto())
 		{
 			showToast("Couldn't delete the photo");
 			return false; // Fail.
 		}
 		
 		// Get the image data file on disk.
-		String path = getActivity().getFileStreamPath(crime.getPhoto().getFilename()).getAbsolutePath();
+		String path = getActivity().getFileStreamPath(mCrime.getPhoto().getFilename()).getAbsolutePath();
 		File imageFile = new File(path);
 		
 		// Delete the file
 		imageFile.delete();
 		
 		// Set the reference to null.
-		crime.setPhoto(null);
+		mCrime.setPhoto(null);
 		
 		// Clean up the ImageView.
 		PictureUtils.cleanImageView(mPhotoView);

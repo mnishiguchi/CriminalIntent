@@ -10,9 +10,13 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
+import android.widget.Toast;
 
 public class PagerActivity extends FragmentActivity
 {
+	private static final String TAG = "CriminalIntent.PagerActivity";
+	
 	private ViewPager mViewPager;
 	
 	// Reference to the list of crimes stored in CrimeLab.
@@ -80,28 +84,45 @@ public class PagerActivity extends FragmentActivity
 	private void setUpEventListener()
 	{
 		mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-			
+			// Invoked when a new page becomes selected.
 			@Override
 			public void onPageSelected(int position)
 			{
+				Log.d(TAG, "onPageSelected(...)");
+
+				// Set the new page's crime title.
 				Crime crime = mCrimes.get(position);
-				
-				if (crime.getTitle() != null)  // If the title is initialized already...
+				if (crime.getTitle() != null)
 				{
 					setTitle(crime.getTitle() );
 				}
 			}
 			
+			// Invoked when the current page is scrolled
 			@Override
-			public void onPageScrolled(int arg0, float arg1, int arg2) { }  // unused
+			public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels)
+			{
+				// Required but not used in this implementation.
+			}
 			
 			@Override
-			public void onPageScrollStateChanged(int arg0) { }  // unused
+			public void onPageScrollStateChanged(int state)
+			{
+				// Required but not used in this implementation.
+			}
 		});
 	}
 	
 	public PagerAdapter getPagerAdapter()
 	{
 		return mViewPager.getAdapter();
+	}
+	
+	/**
+	 * Show a toast message.
+	 */
+	private void showToast(String msg)
+	{
+		Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
 	}
 }
