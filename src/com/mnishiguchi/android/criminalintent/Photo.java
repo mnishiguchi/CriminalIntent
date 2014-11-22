@@ -1,7 +1,11 @@
 package com.mnishiguchi.android.criminalintent;
 
+import java.io.File;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import android.content.Context;
 
 /**
  * Creating a Photo class is useful when we need to display a caption or handling a touch event.
@@ -45,6 +49,20 @@ public class Photo
 	public String getFilename()
 	{
 		return mFilename;
+	}
+	
+	/**
+	 * @param context
+	 * @return true if this image's file was deleted from disk, false otherwise.
+	 */
+	public boolean deletePhoto(Context context)
+	{
+		// Get the image data file on disk.
+		String path = context.getFileStreamPath(mFilename).getAbsolutePath();
+		File imageFile = new File(path);
+		
+		// Delete the file and return success or fail.
+		return imageFile.delete();
 	}
 
 }

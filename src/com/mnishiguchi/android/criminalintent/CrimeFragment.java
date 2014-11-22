@@ -508,29 +508,30 @@ public class CrimeFragment extends Fragment
 	 * Delete from disk and from CrimeLab  the photo of the currently shown Crime.
 	 *  Show a toast message.
 	 */
-	private boolean deletePhoto()
+	private void deletePhoto()
 	{
 		if (null == mCrime.getPhoto())
 		{
-			showToast("Couldn't delete the photo");
-			return false; // Fail.
+			showToast("No photo found");
+			return ; // Fail.
 		}
-		
-		// Get the image data file on disk.
-		String path = getActivity().getFileStreamPath(mCrime.getPhoto().getFilename()).getAbsolutePath();
-		File imageFile = new File(path);
-		
-		// Delete the file
-		imageFile.delete();
-		
-		// Set the reference to null.
-		mCrime.setPhoto(null);
 		
 		// Clean up the ImageView.
 		PictureUtils.cleanImageView(mPhotoView);
 		
-		showToast("1 photo deleted");
-		return true; // Success.
+		// Delete the image data file on disk.
+		boolean success = mCrime.getPhoto().deletePhoto(getActivity());
+		if (success)
+		{
+			showToast("1 photo deleted");
+			
+			// Set the reference to null.
+			mCrime.setPhoto(null);
+		}
+		else
+		{
+			showToast("Couldn't delete the photo");
+		}
 	}
 	
 	/**
