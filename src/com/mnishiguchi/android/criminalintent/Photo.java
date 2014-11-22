@@ -6,12 +6,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.util.Log;
 
 /**
  * Creating a Photo class is useful when we need to display a caption or handling a touch event.
  */
 public class Photo
 {
+	private static final String TAG = "CriminalIntent.Photo";
+	
 	private static final String JSON_FILENAME ="filename";
 	
 	private String mFilename;
@@ -62,7 +65,10 @@ public class Photo
 		File imageFile = new File(path);
 		
 		// Delete the file and return success or fail.
-		return imageFile.delete();
+		boolean success = imageFile.delete();
+		Log.d(TAG, "deletePhoto success?: " + String.valueOf(success));
+		
+		return success;
 	}
 
 }

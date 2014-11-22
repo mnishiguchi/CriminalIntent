@@ -97,11 +97,19 @@ public class CrimeLab
 	}
 	
 	/**
-	 * Delete a crime from the list.
+	 * Delete a crime from the list. If the crime has a photo, delete it from disk.
 	 * @param crime
 	 */
 	public void deleteCrime(Crime crime)
 	{
+		// If the crime has a photo, delete it from disk.
+		if (crime.getPhoto() != null)
+		{
+			// Delete the photo file on disk.
+			crime.getPhoto().deletePhoto(mAppContext);
+		}
+		
+		// Delete the specified crime from the list.
 		mCrimes.remove(crime);
 	}
 	
