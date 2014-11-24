@@ -36,15 +36,13 @@ public class CrimeLab
 		try
 		{
 			mCrimes = mSerializer.loadCrimes();
-			Toast.makeText(mAppContext, "Crimes successfully loaded.",
-					Toast.LENGTH_SHORT).show();
+			showToast("Crimes successfully loaded.");
 		}
 		catch (Exception e)
 		{
 			mCrimes = new ArrayList<Crime>();
 			Log.e(TAG, "Error loading crimes", e);
-			Toast.makeText(mAppContext, "Error loading crimes.",
-					Toast.LENGTH_SHORT).show();
+			showToast("Error loading crimes.");
 		}
 	}
 	
@@ -115,23 +113,18 @@ public class CrimeLab
 	
 	public boolean loadCrimes()
 	{
-		
-		
-		
 		// Load crimes from the file system.
 		try
 		{
 			mCrimes = mSerializer.loadCrimes();
-			Toast.makeText(mAppContext, "Crimes successfully loaded.",
-					Toast.LENGTH_SHORT).show();
+			showToast("Crimes successfully loaded.");
 			return true;
 		}
 		catch (Exception e)
 		{
 			mCrimes = new ArrayList<Crime>();
 			Log.e(TAG, "Error loading crimes", e);
-			Toast.makeText(mAppContext, "Error loading crimes.",
-					Toast.LENGTH_SHORT).show();
+			showToast("Error loading crimes.");
 			return false;
 		}
 	}
@@ -144,14 +137,12 @@ public class CrimeLab
 		try
 		{
 			mSerializer.saveCrimes(mCrimes);
-			//Log.d(TAG, "Crimes saved to file");
-			Toast.makeText(mAppContext, "Crimes saved to file", Toast.LENGTH_SHORT).show();
+			showToast("Crimes saved to file");
 			return true;
 		}
 		catch (Exception e)
 		{
-			//Log.e(TAG, "Error saving crimes: ", e);
-			Toast.makeText(mAppContext, "Error saving crimes", Toast.LENGTH_SHORT).show();
+			showToast("Error saving crimes");
 			return false;
 		}
 	}
@@ -168,6 +159,14 @@ public class CrimeLab
 			c.setSolved(i%2 == 0);  // Every other one
 			mCrimes.add(c);
 		}
+	}
+	
+	/**
+	 * Show a toast message.
+	 */
+	private void showToast(String msg)
+	{
+		Toast.makeText(mAppContext, msg, Toast.LENGTH_SHORT).show();
 	}
 
 }

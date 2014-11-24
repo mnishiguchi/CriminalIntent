@@ -96,6 +96,8 @@ public class CrimeFragment extends Fragment
 	{
 		super.onCreate(savedInstanceState);
 		
+		Log.d(TAG, "onCreate()");
+		
 		// Store a reference to this instance.
 		sCrimeFragment = this;
 		
@@ -113,7 +115,7 @@ public class CrimeFragment extends Fragment
 	public View onCreateView(LayoutInflater inflater, ViewGroup parent,
 			Bundle savedInstanceState)
 	{
-		Log.d(TAG, "Entered: onCreateView()");
+		Log.d(TAG, "onCreateView()");
 		
 		// Get reference to the layout.
 		View v = inflater.inflate(R.layout.fragment_crime, parent, false);
@@ -370,12 +372,7 @@ public class CrimeFragment extends Fragment
 		// Get a scaled bitmap.
 		if (photo != null)
 		{
-			// Get the absolute path of the photo file on the filesystem. 
-			String path = getActivity().getFileStreamPath(photo.getFilename())
-					.getAbsolutePath(); // Convert the path to string.
-			
-			// Get a scaled bitmap drawable based on the data in this file.
-			bitmap = PictureUtils.getScaledDrawable(getActivity(), path);
+			bitmap = PictureUtils.loadBitmapDrawableFromFile(getActivity(), photo);
 		}
 		// Set the image on the ImageView.
 		mPhotoView.setImageDrawable(bitmap);

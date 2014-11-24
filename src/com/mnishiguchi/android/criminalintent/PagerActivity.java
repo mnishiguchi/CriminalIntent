@@ -27,6 +27,8 @@ public class PagerActivity extends FragmentActivity
 	{
 		super.onCreate(savedInstanceState);
 		
+		Log.d(TAG, "onCreate()");
+		
 		mViewPager = new ViewPager(this);
 		mViewPager.setId(R.id.viewPager);  // This id is manually defined in res/values/ids.xml
 		setContentView(mViewPager);
@@ -42,6 +44,7 @@ public class PagerActivity extends FragmentActivity
 	
 	private void setUpPagerAdapter()
 	{
+		Log.d(TAG, "setUpPagerAdapter()");
 		FragmentManager fm = getSupportFragmentManager();
 		mViewPager.setAdapter( new FragmentStatePagerAdapter(fm) {
 			
@@ -69,6 +72,7 @@ public class PagerActivity extends FragmentActivity
 	 */
 	private void setUpInitialPagerItem()
 	{
+		Log.d(TAG, "setUpInitialPagerItem()");
 		UUID crimeid = (UUID) getIntent()
 			.getSerializableExtra(CrimeFragment.EXTRA_CRIME_ID);
 		for (int i = 0; i < mCrimes.size(); i++)
@@ -83,6 +87,7 @@ public class PagerActivity extends FragmentActivity
 	
 	private void setUpEventListener()
 	{
+		Log.d(TAG, "setUpEventListener()");
 		mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 			// Invoked when a new page becomes selected.
 			@Override

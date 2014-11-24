@@ -1,16 +1,28 @@
 package com.mnishiguchi.android.criminalintent;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
+import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,10 +31,11 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 public class CrimeCameraFragment extends Fragment
 {
-	private static final String TAG = "tag_CrimeCameraFragment";
+	private static final String TAG = "CriminalIntent.CrimeCameraFragment";
 	
 	public static final String EXTRA_PHOTO_FILENAME =
 			"com.mnishiguchi.android.criminalintent.photo_filename";
@@ -58,19 +71,15 @@ public class CrimeCameraFragment extends Fragment
 			// Create a file name with a random UUID.
 			String filename = UUID.randomUUID().toString() + ".jpeg";
 			
-			// Save the jpeg data to disk.
-			FileOutputStream out = null;
-			boolean success = true;
-			try
-			{
-				out = getActivity().openFileOutput(filename, Context.MODE_PRIVATE);
-				out.write(data);
-			}
-			catch (Exception e)
-			{
-				Log.e(TAG, "Error closing file: " + filename, e);
-				success = false;
-			}
+			// Scale down the bitmap to a smaller size.
+			Bitmap bitmap = PictureUtils.getScaledBitmap(getActivity(), data);
+			
+			// Compress the bitmap.
+			bitmap = PictureUtils.compressBitmap(bitmap);
+			
+			// Save the picture on disk.
+			//boolean success = savePictureExternal(data, filename);
+			boolean success = PictureUtils.savePictureInternal(getActivity(), data, filename);
 			
 			if (success) // Successfully saved.
 			{
@@ -220,5 +229,13 @@ public class CrimeCameraFragment extends Fragment
 		}
 		
 		return bestSize;
+	}
+	
+	/**
+	 * Show a toast message.
+	 */
+	private void showToast(String msg)
+	{
+		Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
 	}
 }
