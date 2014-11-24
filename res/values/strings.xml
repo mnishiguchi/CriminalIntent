@@ -20,7 +20,8 @@
 	<string name="show_subtitle">Show Subtitle</string>
 	<string name="hide_subtitle">Hide Subtitle</string>
 	<string name="subtitle">This is the subtitle of the Action Bar.</string>
-	<string name="sample_options">Some Options</string>
+	<string name="options_dialog">Options (Dialog)</string>
+	<string name="options_group">Options (Group)</string>
 	
 	<!-- Contextual Action -->
 	<string name="delete_crime">DELETE CRIME</string>

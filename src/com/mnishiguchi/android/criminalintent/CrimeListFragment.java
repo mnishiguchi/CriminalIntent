@@ -201,13 +201,15 @@ public class CrimeListFragment extends ListFragment
 	{
 		switch (item.getItemId() )
 		{
+			// --- NEW ---
+			
 			case R.id.menu_item_new_crime:
-				
 				registerNewCrime();
 				return true;  // No further processing is necessary.
-					
-			case R.id.menu_item_show_subtitle:
-				
+			
+			// --- Show subtitle ---
+			
+			case R.id.menu_item_show_subtitle:	
 				// Set the action bar's subtitle, toggling "Show subtitle" & "Hide subtitle"
 				if (getActivity().getActionBar().getSubtitle() == null)
 				{
@@ -223,10 +225,32 @@ public class CrimeListFragment extends ListFragment
 				}
 				return true;  // No further processing is necessary.
 				
-			case R.id.menu_item_sample_options:
+			// --- Menu item => Open Dialog ---
 				
+			case R.id.menu_item_sample_options:
 				// Open AlertDialog for options.
 				new SingleChoiceOptionsFragment().show(getFragmentManager(), null);
+			
+			// --- Menu item => Open SubMenu ---
+				
+			case R.id.menu_item_sample_group:
+				// Do something.
+				return true;
+			case R.id.submenu1:
+				if (item.isChecked()) item.setChecked(false);
+				else item.setChecked(true);
+				// Do something.
+				return true;	
+			case R.id.submenu2:
+				if (item.isChecked()) item.setChecked(false);
+				else item.setChecked(true);
+				// Do something.
+				return true;
+			case R.id.submenu3:
+				if (item.isChecked()) item.setChecked(false);
+				else item.setChecked(true);
+				// Do something.
+				return true;
 				
 			default:
 				return super.onOptionsItemSelected(item);

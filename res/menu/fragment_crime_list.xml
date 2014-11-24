@@ -11,9 +11,20 @@
 		android:showAsAction="never" />
 	
 	<item 	android:id="@+id/menu_item_sample_options"
-		android:icon="@android:drawable/ic_menu_manage"
-		android:title="@string/sample_options"
+		android:title="@string/options_dialog"
 		android:showAsAction="never" />
+	
+	<item 	android:id="@+id/menu_item_sample_group"
+		android:title="@string/options_group">
+		<!-- SubMenu -->
+		<menu >
+			<group android:id="@+id/group1" android:checkableBehavior="single">
+				<item android:id="@+id/submenu1" android:title="SubMenu No. 1" />
+				<item android:id="@+id/submenu2" android:title="SubMenu No. 2" />
+				<item android:id="@+id/submenu3" android:title="SubMenu No. 3" />
+			</group>   
+		</menu>
+	</item>
 	
 </menu>
 
