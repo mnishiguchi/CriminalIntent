@@ -1,6 +1,5 @@
 package com.mnishiguchi.android.criminalintent;
 
-import java.io.File;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -72,7 +71,7 @@ public class CrimeFragment extends Fragment
 	private ImageButton mBtnPhoto;
 	
 	// Reference to CAB.
-	private ActionMode mMode;
+	private ActionMode mActionMode;
 	
 	/**
 	 * Creates a new fragment instance and attaches the specified UUID as fragment's arguments.
@@ -227,7 +226,7 @@ public class CrimeFragment extends Fragment
 			public boolean onCreateActionMode(ActionMode mode, Menu menu)
 			{
 				// Remember reference to action mode.
-				mMode = mode;
+				mActionMode = mode;
 				
 				// Inflate the menu using a special inflater defined in the ActionMode class.
 				MenuInflater inflater = mode.getMenuInflater();
@@ -238,7 +237,7 @@ public class CrimeFragment extends Fragment
 			@Override
 			public boolean onPrepareActionMode(ActionMode mode, Menu menu)
 			{
-				// Required, but not used in this implementation.
+				mode.setTitle("Photo Checked");
 				return false;
 			}
 			
@@ -250,7 +249,6 @@ public class CrimeFragment extends Fragment
 					case R.id.menu_item_delete_photo: // Delete menu item.
 						
 						deletePhoto();
-						//showToast("Delete Action clicked");
 
 						// Prepare the action mode to be destroyed.
 						mode.finish(); // Action picked, so close the CAB
@@ -264,7 +262,8 @@ public class CrimeFragment extends Fragment
 			@Override
 			public void onDestroyActionMode(ActionMode mode)
 			{
-				// Required, but not used in this implementation.
+				// Set it to null because we exited the action mode.
+				mActionMode = null;
 			}
 		};
 		
@@ -274,10 +273,11 @@ public class CrimeFragment extends Fragment
 			@Override
 			public boolean onLongClick(View v)
 			{
+				// Ignore the long click if already in the ActionMode.
+				if (mActionMode != null) return false;
+				
+				// Check if a photo is set on the ImageView.
 				boolean hasDrawable = (mPhotoView.getDrawable() != null);
-				
-				showToast("hasDrawable: " + hasDrawable);
-				
 				if (hasDrawable)
 				{
 					// Show the Contexual Action Bar.
@@ -309,7 +309,7 @@ public class CrimeFragment extends Fragment
 		PackageManager pm = getActivity().getPackageManager();
 		boolean hasCamera = pm.hasSystemFeature(PackageManager.FEATURE_CAMERA) ||
 				pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT) ||
-				(Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD && Camera.getNumberOfCameras() > 0);
+				Camera.getNumberOfCameras() > 0;
 		if (!hasCamera)
 		{
 			mBtnPhoto.setEnabled(false);
@@ -324,10 +324,10 @@ public class CrimeFragment extends Fragment
 	 */
 	public void finishCAB()
 	{
-		if (mMode != null) 
+		if (mActionMode != null) 
 		 {
-			mMode.finish();
-			mMode = null;
+			mActionMode.finish();
+			mActionMode = null;
 		 }
 	}
 	

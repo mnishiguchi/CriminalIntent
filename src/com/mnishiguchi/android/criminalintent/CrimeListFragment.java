@@ -118,8 +118,7 @@ public class CrimeListFragment extends ListFragment
 			@Override
 			public boolean onPrepareActionMode(ActionMode mode, Menu menu)
 			{
-				// Required, but not used in this implementation.
-				return false;
+				return false; // Return false if nothing is done
 			}
 
 			@Override
@@ -133,8 +132,7 @@ public class CrimeListFragment extends ListFragment
 						DeleteConfirmationFragment.newInstance(getSelectedItems())
 							.show(getActivity().getSupportFragmentManager(), DIALOG_DELETE);
 
-						// Prepare the action mode to be destroyed.
-						mode.finish();
+						mode.finish(); // Action picked, so close the CAB
 						
 						return true;
 					
@@ -153,7 +151,7 @@ public class CrimeListFragment extends ListFragment
 			public void onItemCheckedStateChanged(ActionMode mode,
 					int position, long id, boolean checked)
 			{
-				// Required, but not used in this implementation.
+				mode.setTitle(getListView().getCheckedItemCount() + " item(s) selected");
 			}
 		});
 
