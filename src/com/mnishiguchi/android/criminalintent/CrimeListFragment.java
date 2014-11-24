@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -166,6 +167,7 @@ public class CrimeListFragment extends ListFragment
 		
 		// Reload the list.
 		( (CrimeAdapter) getListAdapter() ).notifyDataSetChanged();
+		
 	}
 	
 	/**

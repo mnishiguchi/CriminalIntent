@@ -214,7 +214,7 @@ public class CrimeFragment extends Fragment
 				FragmentManager fm = getActivity().getSupportFragmentManager();
 				
 				// Get the absolute path for this crime's photo.
-				String path = getActivity().getFileStreamPath(photo.getFilename()).getAbsolutePath();
+				String path = photo.getAbsolutePath(getActivity());
 				
 				// Show an ImageFragment
 				ImageFragment.newInstance(path).show(fm, DIALOG_IMAGE);
@@ -364,7 +364,7 @@ public class CrimeFragment extends Fragment
 	 * Get the current crime's photo image from file storage and show it on the ImageView.
 	 * Loading images in onStart() and them unloading in onStop is a good practice.
 	 */
-	private void showPhoto()
+	private void showThumbnail()
 	{
 		Photo photo = mCrime.getPhoto();
 		BitmapDrawable bitmap = null;
@@ -372,7 +372,8 @@ public class CrimeFragment extends Fragment
 		// Get a scaled bitmap.
 		if (photo != null)
 		{
-			bitmap = PictureUtils.loadBitmapDrawableFromFile(getActivity(), photo);
+			// bitmap = photo.loadBitmapDrawable(getActivity());
+			bitmap = photo.loadBitmapDrawable(getActivity());
 		}
 		// Set the image on the ImageView.
 		mPhotoView.setImageDrawable(bitmap);
@@ -386,7 +387,7 @@ public class CrimeFragment extends Fragment
 	{
 		super.onStart();
 		
-		showPhoto();
+		showThumbnail();
 	}
 	
 	/*
@@ -432,7 +433,7 @@ public class CrimeFragment extends Fragment
 				// Attach it to the crime.
 				mCrime.setPhoto(photo);
 				
-				showPhoto();
+				showThumbnail();
 			}
 		}
 	}

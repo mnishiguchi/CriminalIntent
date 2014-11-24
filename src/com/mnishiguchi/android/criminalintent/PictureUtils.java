@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Random;
@@ -17,6 +18,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
 import android.view.Display;
@@ -44,6 +47,14 @@ public class PictureUtils
 		float destWidth = size.x;
 		float destHeight = size.y;
 		
+		return getScaledDrawable(activity, path, destWidth, destHeight);
+	}
+	
+	/**
+	 * Get a BitmapDrawable from a local file that is scaled down to the specified size.
+	 */
+	public static BitmapDrawable getScaledDrawable(Activity activity, String path, float destWidth, float destHeight)
+	{
 		// Get the dimensions of the image on disk.
 		BitmapFactory.Options options = new BitmapFactory.Options();
 		options.inJustDecodeBounds = true; // No pixel data needed.
@@ -97,7 +108,7 @@ public class PictureUtils
 		// Get the dimensions of the image on disk.
 		BitmapFactory.Options options = new BitmapFactory.Options();
 		options.inJustDecodeBounds = true; // No pixel data needed.
-		Bitmap bitmap = BitmapFactory.decodeByteArray(data , 0, data.length, options);
+		BitmapFactory.decodeByteArray(data , 0, data.length, options);
 		
 		float srcWidth = options.outWidth;
 		float srcHeight = options.outHeight;
@@ -125,10 +136,7 @@ public class PictureUtils
 		options.inSampleSize = inSampleSize;
 		
 		// Scale down the bitmap data based on the inSampleSize.
-		bitmap = BitmapFactory.decodeByteArray(data , 0, data.length, options);
-		
-		// Create drawable from the scaled bitmap.
-		return bitmap;
+		return BitmapFactory.decodeByteArray(data , 0, data.length, options);
 	}
 	
 	/**
@@ -138,33 +146,23 @@ public class PictureUtils
 	{
 		// Write a compressed version of the bitmap to the specified outputstream.
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		bitmap.compress(CompressFormat.JPEG, 80, out);
+		bitmap.compress(CompressFormat.JPEG, 0, out);
 		Bitmap compressedImage = BitmapFactory.decodeStream(new ByteArrayInputStream(out.toByteArray()));
+		try
+		{
+			out.flush();
+			out.close();
+		}
+		catch (IOException e)
+		{
+			Log.e(TAG, "Error closing ByteArrayOutputStream", e);
+			
+		}
 		
 		Log.e("Original   dimensions", bitmap.getWidth() + " " + bitmap.getHeight());
 		Log.e("Compressed dimensions", compressedImage.getWidth() + " " + compressedImage.getHeight());
 		
 		return compressedImage;
-	}
-
-	/**
-	 * Get a bitmap drawable from disk for the specified photo object.
-	 */
-	public static BitmapDrawable loadBitmapDrawableFromFile(Activity activity, Photo photo)
-	{
-		BitmapDrawable bitmap = null;
-		// Get a scaled bitmap.
-		if (photo != null)
-		{
-			// Get the absolute path of the photo file on the filesystem. 
-			String path = activity.getFileStreamPath(photo.getFilename())
-					.getAbsolutePath(); // Convert the path to string.
-			
-			// Get a scaled bitmap drawable based on the data in this file.
-			bitmap = PictureUtils.getScaledDrawable(activity, path);
-		}
-		
-		return bitmap;
 	}
 	
 	/**
@@ -189,7 +187,8 @@ public class PictureUtils
 	}
 	
 	/**
-	 * 
+	 * Save an image data at:
+	 * a private file associated with this Context's application package.
 	 */
 	public static boolean savePictureInternal(Context context, byte[] data, String filename)
 	{
@@ -199,6 +198,7 @@ public class PictureUtils
 		{
 			out = context.openFileOutput(filename, Context.MODE_PRIVATE);
 			out.write(data);
+			out.close();
 		}
 		catch (Exception e)
 		{
@@ -209,9 +209,10 @@ public class PictureUtils
 	}
 
 	/**
-	 * 
+	 * Save an image data at:
+	 * /storage/sdcard0/Android/data/package/files/Pictures
 	 */
-	public static boolean savePictureExternal(Context context, byte[] data, String filename)
+	public static boolean savePictureExternalPrivate(Context context, byte[] data, String filename)
 	{
 		// Ensure that the external storage is available.
 		if (! Environment. getExternalStorageState (). equals (Environment .MEDIA_MOUNTED ))
@@ -230,9 +231,11 @@ public class PictureUtils
 			out.write(data);
 			out.close();
 			
+			Log.e(TAG, "Photo saved to: " + file.getAbsolutePath());
+			
 			// Get the media scanner service tol read metadata from the file and
 			// add the file to the media content provider. 
-			/*MediaScannerConnection.scanFile(getActivity(),
+			MediaScannerConnection.scanFile(context,
 					new String[] { file.toString() }, null,
 					new MediaScannerConnection.OnScanCompletedListener()
 					{
@@ -242,7 +245,7 @@ public class PictureUtils
 							Log.i("ExternalStorage", "Scanned " + path + ":");
 							Log.i("ExternalStorage", "-> uri=" + uri);
 						}
-					});*/
+					});
 		}
 		catch (Exception e)
 		{
@@ -251,27 +254,4 @@ public class PictureUtils
 		}
 		return true;
 	}
-	
-	public static void saveImage(Context context, Bitmap finalBitmap) {
-
-	    String root = Environment.getExternalStorageDirectory().toString();
-	    File myDir = new File(root + "/saved_images");    
-	    myDir.mkdirs();
-	    Random generator = new Random();
-	    int n = 10000;
-	    n = generator.nextInt(n);
-	    String fname = "Image-"+ n +".jpg";
-	    File file = new File (myDir, fname);
-	    if (file.exists ()) file.delete (); 
-	    try {
-	           FileOutputStream out = new FileOutputStream(file);
-	           finalBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
-	           out.flush();
-	           out.close();
-
-	    } catch (Exception e) {
-	           e.printStackTrace();
-	    }
-	}
-	
 }

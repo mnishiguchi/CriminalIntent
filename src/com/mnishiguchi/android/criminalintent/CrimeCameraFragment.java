@@ -78,8 +78,7 @@ public class CrimeCameraFragment extends Fragment
 			bitmap = PictureUtils.compressBitmap(bitmap);
 			
 			// Save the picture on disk.
-			//boolean success = savePictureExternal(data, filename);
-			boolean success = PictureUtils.savePictureInternal(getActivity(), data, filename);
+			boolean success = PictureUtils.savePictureExternalPrivate(getActivity(), data, filename);
 			
 			if (success) // Successfully saved.
 			{
