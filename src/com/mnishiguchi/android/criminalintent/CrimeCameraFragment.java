@@ -19,6 +19,7 @@ import android.graphics.Bitmap.CompressFormat;
 import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
+import android.hardware.SensorManager;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
@@ -26,10 +27,13 @@ import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.OrientationEventListener;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -37,8 +41,11 @@ public class CrimeCameraFragment extends Fragment
 {
 	private static final String TAG = "CriminalIntent.CrimeCameraFragment";
 	
-	public static final String EXTRA_PHOTO_FILENAME =
-			"com.mnishiguchi.android.criminalintent.photo_filename";
+	public static final String EXTRA_PHOTO_FILENAME = "com.mnishiguchi.android.criminalintent.photo_filename";
+	public static final String EXTRA_PHOTO_ORIENTATION = "com.mnishiguchi.android.android.criminalintent.photo_orientation";
+	
+	private OrientationEventListener mOrientationEventListener;
+	private Orientation mOrientation;
 	
 	private Camera mCamera;
 	private SurfaceView mSurfaceView;
@@ -84,6 +91,8 @@ public class CrimeCameraFragment extends Fragment
 			{
 				Intent i = new Intent();
 				i.putExtra(EXTRA_PHOTO_FILENAME, filename);
+				int orientation = mOrientation.mode;
+				i.putExtra(EXTRA_PHOTO_ORIENTATION, orientation);
 				getActivity().setResult(Activity.RESULT_OK, i);
 			}
 			else // Error occurred.
@@ -192,7 +201,58 @@ public class CrimeCameraFragment extends Fragment
 	{
 		super.onResume();
 		
+		// Open the camera resource.
 		mCamera = Camera.open(0);
+		
+		// Global storage for orientation data.
+		mOrientation = Orientation.get(getActivity());
+		
+		// Orientation Detector
+		if (null == mOrientationEventListener)
+		{
+			mOrientationEventListener = new OrientationEventListener(getActivity(),
+					SensorManager.SENSOR_DELAY_NORMAL) {
+
+					@Override
+					public void onOrientationChanged(int orientation)
+					{
+						// determine our orientation based on sensor response
+						if (orientation >= 315 || orientation < 45)
+						{
+							if (mOrientation.mode != Orientation.PORTRAIT_NORMAL)
+							{
+								mOrientation.mode = Orientation.PORTRAIT_NORMAL;
+							}
+						}
+						else if (orientation < 315 && orientation >= 225)
+						{
+							if (mOrientation.mode != Orientation.LANDSCAPE_NORMAL)
+							{
+								mOrientation.mode = Orientation.LANDSCAPE_NORMAL;
+							}
+						}
+						else if (orientation < 225 && orientation >= 135)
+						{
+							if (mOrientation.mode != Orientation.PORTRAIT_INVERTED)
+							{
+								mOrientation.mode = Orientation.PORTRAIT_INVERTED;
+							}
+						}
+						else // orientation <135 && orientation > 45
+						{ 
+							if (mOrientation.mode != Orientation.LANDSCAPE_INVERTED)
+							{
+								mOrientation.mode = Orientation.LANDSCAPE_INVERTED;
+							}
+						}
+					}
+				};
+			}
+		
+			if (mOrientationEventListener.canDetectOrientation())
+			{
+				mOrientationEventListener.enable();
+			}
 	}
 	
 	@Override
@@ -200,10 +260,16 @@ public class CrimeCameraFragment extends Fragment
 	{
 		super.onPause();
 		
-		if (mCamera != null) // Camera exists?
+		if (mCamera != null)
 		{
 			mCamera.release();
 			mCamera = null;
+		}
+		
+		if (mOrientationEventListener != null)
+		{
+			mOrientationEventListener.disable();
+			mOrientation.mode = Orientation.NO_DATA;
 		}
 	}
 	

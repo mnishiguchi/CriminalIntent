@@ -1,7 +1,9 @@
 package com.mnishiguchi.android.criminalintent;
 
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.view.OrientationEventListener;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -23,6 +25,18 @@ public class CrimeCameraActivity extends SingleFragmentActivity
 	protected Fragment createFragment()
 	{
 		return new CrimeCameraFragment();
+	}
+	
+	@Override
+	protected void onResume()
+	{
+		super.onResume();
+	}
+	
+	@Override
+	protected void onPause()
+	{
+		super.onPause();
 	}
 }
 

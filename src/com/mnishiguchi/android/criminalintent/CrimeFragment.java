@@ -46,6 +46,7 @@ public class CrimeFragment extends Fragment
 	
 	public static final String EXTRA_DATE = "com.mnishiguchi.android.criminalintent.date";
 	public static final String EXTRA_CRIME_ID = "com.mnishiguchi.android.criminalintent.crime_id";
+	public static final String EXTRA_PHOTO_ORIENTATION = "com.mnishiguchi.android.android.criminalintent.photo_orientation";
 	
 	private static final String DIALOG_DATETIME = "datetime";
 	private static final String DIALOG_IMAGE = "image";
@@ -216,8 +217,11 @@ public class CrimeFragment extends Fragment
 				// Get the absolute path for this crime's photo.
 				String path = photo.getAbsolutePath(getActivity());
 				
+				// Get the orientation of this crime's photo.
+				int orientation = photo.getOrientation();
+				
 				// Show an ImageFragment
-				ImageFragment.newInstance(path).show(fm, DIALOG_IMAGE);
+				ImageFragment.newInstance(path, orientation).show(fm, DIALOG_IMAGE);
 			}
 		});
 
@@ -366,15 +370,26 @@ public class CrimeFragment extends Fragment
 	 */
 	private void showThumbnail()
 	{
-		Photo photo = mCrime.getPhoto();
-		BitmapDrawable bitmap = null;
+		// Ensure that this Crime has a photo.
+		if (null == mCrime.getPhoto())
+		{
+			mCrime.setPhoto(null);
+			showToast("No photo found for this crime");
+			return ; // Fail.
+		}
 		
 		// Get a scaled bitmap.
-		if (photo != null)
+		Photo photo = mCrime.getPhoto();
+		BitmapDrawable bitmap = photo.loadBitmapDrawable(getActivity());
+		
+		// Check the orientation. If necessary, change the bitmap orientation.
+		int orientation = Orientation.get(getActivity()).mode;
+		if (orientation == Orientation.PORTRAIT_INVERTED ||
+				orientation == Orientation.PORTRAIT_NORMAL)
 		{
-			// bitmap = photo.loadBitmapDrawable(getActivity());
-			bitmap = photo.loadBitmapDrawable(getActivity());
+			bitmap = PictureUtils.getPortraitDrawable(mPhotoView, bitmap);
 		}
+
 		// Set the image on the ImageView.
 		mPhotoView.setImageDrawable(bitmap);
 	}
@@ -424,11 +439,13 @@ public class CrimeFragment extends Fragment
 		
 		else if (requestCode == REQUEST_PHOTO)
 		{
+			
 			String filename = resultData.getStringExtra(CrimeCameraFragment.EXTRA_PHOTO_FILENAME);
+			int orientation = resultData.getIntExtra(CrimeCameraFragment.EXTRA_PHOTO_ORIENTATION, -1);
 			if (filename != null)
 			{
 				// Create a new Photo object based on the filename sent from CrimeCameraFragment.
-				Photo photo = new Photo(filename);
+				Photo photo = new Photo(filename, orientation);
 				
 				// Attach it to the crime.
 				mCrime.setPhoto(photo);

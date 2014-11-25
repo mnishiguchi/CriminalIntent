@@ -14,7 +14,7 @@ import android.widget.Toast;
  */
 public class CrimeLab
 {
-	private static final String TAG = "tag_CrimeLab";
+	private static final String TAG = "Criminalintent.CrimeLab";
 
 	private static final String FILENAME = "crimes.json";
 	

@@ -4,17 +4,14 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Random;
 
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.drawable.BitmapDrawable;
@@ -137,6 +134,25 @@ public class PictureUtils
 		
 		// Scale down the bitmap data based on the inSampleSize.
 		return BitmapFactory.decodeByteArray(data , 0, data.length, options);
+	}
+	
+	public static BitmapDrawable getPortraitDrawable(ImageView imageView, BitmapDrawable drawable)
+	{
+		// Matrix to rotate.
+		Matrix matrix = new Matrix();
+		matrix.postRotate(90);
+		
+		// Original bitmap
+		Bitmap src = drawable.getBitmap();
+		
+		// Transform the bitmap based on the matrix.
+		Bitmap result = Bitmap.createBitmap(src, 0, 0,
+				drawable.getIntrinsicWidth(), 
+				drawable.getIntrinsicHeight(),
+				matrix, true);
+		
+		// Create a new BitmapDrawable.
+		return new BitmapDrawable(imageView.getResources(), result);
 	}
 	
 	/**

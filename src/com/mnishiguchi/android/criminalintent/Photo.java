@@ -10,10 +10,7 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.media.MediaScannerConnection;
-import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
 
@@ -25,17 +22,30 @@ public class Photo
 	private static final String TAG = "CriminalIntent.Photo";
 	
 	private static final String JSON_FILENAME ="filename";
+	private static final String JSON_ORIENTATION = "orientation";
 	
 	private String mFilename;
+	private final int mOrientation;
 	
 	/**
-	 * Constructor to create a Photo from a specified filename.
+	 * 
 	 */
-	public Photo (String filename)
-	{
-		mFilename = filename;
-	}
+
 	
+		/**
+		 * Constructor to create a Photo representing existing file on disk
+		 */
+		public Photo(String filename, int orientation)
+		{
+			mFilename = filename;
+			mOrientation = orientation;
+		}
+	
+		public int getOrientation()
+		{
+			return mOrientation;
+		}
+		
 	/**
 	 * Constructor to create a Photo from a specified JSON filename.
 	 * Used when saving and loading its property of type Photo.
@@ -43,6 +53,7 @@ public class Photo
 	public Photo (JSONObject json) throws JSONException
 	{
 		mFilename = json.getString(JSON_FILENAME);
+		mOrientation = json.getInt(JSON_ORIENTATION);
 	}
 	
 	/**
@@ -62,7 +73,7 @@ public class Photo
 	{
 		return mFilename;
 	}
-	
+
 	/**
 	 *  Get the absolute path to the file where this photo's image data  is stored.
 	 */
