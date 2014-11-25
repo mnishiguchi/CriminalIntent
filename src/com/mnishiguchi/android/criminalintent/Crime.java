@@ -8,12 +8,13 @@ import org.json.JSONObject;
 
 public class Crime
 {
-	// FOR JSON
+	// JSON keys
 	private static final String JSON_ID = "id";
 	private static final String JSON_TITLE = "title";
 	private static final String JSON_SOLVED = "solved";
 	private static final String JSON_DATE = "date";
 	private static final String JSON_PHOTO = "photo";
+	private static final String JSON_SUSPECT = "suspect";
 	
 	// INSTANCE VARIABLES
 	private UUID mId;
@@ -21,6 +22,7 @@ public class Crime
 	private Date mDate;
 	private boolean mSolved;
 	private Photo mPhoto;
+	private String mSuspect;
 	
 	/**
 	 * Constructor. Create a default Crime object.
@@ -54,6 +56,11 @@ public class Crime
 		{
 			mPhoto = new Photo(json.getJSONObject(JSON_PHOTO));
 		}
+		
+		if (json.has(JSON_SUSPECT))
+		{
+			mSuspect = json.getString(JSON_SUSPECT);
+		}
 	}
 	
 	/**
@@ -72,6 +79,8 @@ public class Crime
 		{
 			json.put(JSON_PHOTO, mPhoto.toJSON());
 		}
+		json.put(JSON_SUSPECT, mSuspect);
+		
 		return json;
 	}
 	
@@ -126,4 +135,13 @@ public class Crime
 		mPhoto = photo;
 	}
 
+	public String getSuspect()
+	{
+		return mSuspect;
+	}
+
+	public void setSuspect(String suspect)
+	{
+		mSuspect = suspect;
+	}
 }

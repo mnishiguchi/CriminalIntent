@@ -51,7 +51,7 @@ public class DateTimeOptionsFragment extends DialogFragment
 		
 		// Configure the AlertDialog and return it.
 		return new AlertDialog.Builder(getActivity() )
-				.setTitle(CrimeFragment.DATE_FORMAT.format(mDate))
+				.setTitle(mDate.toString())
 				.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) { }  // Do nothing.

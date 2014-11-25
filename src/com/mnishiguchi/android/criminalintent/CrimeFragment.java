@@ -1,7 +1,7 @@
 package com.mnishiguchi.android.criminalintent;
 
-import java.text.DateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -11,16 +11,21 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.database.Cursor;
 import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Camera;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.NavUtils;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
@@ -54,9 +59,7 @@ public class CrimeFragment extends Fragment
 	
 	public static final int REQUEST_DATE = 0;
 	public static final int REQUEST_PHOTO = 1;
-	
-	public static DateFormat DATE_FORMAT = DateFormat.getDateTimeInstance(
-			DateFormat.LONG, DateFormat.SHORT, Locale.getDefault());
+	public static final int REQUEST_CONTACT = 2;
 	
 	// Store reference to an instance of this fragment that is currently working..
 	private static CrimeFragment sCrimeFragment;
@@ -70,6 +73,7 @@ public class CrimeFragment extends Fragment
 	private CheckBox mCheckSolved;
 	private ImageView mPhotoView;
 	private ImageButton mBtnPhoto;
+	private Button mSuspectButton;
 	
 	// Reference to CAB.
 	private ActionMode mActionMode;
@@ -321,6 +325,47 @@ public class CrimeFragment extends Fragment
 			mBtnPhoto.setEnabled(false);
 		}
 		
+		// --- Report button ---
+		
+		// Show a list of reporting apps.
+		final Button reportButton = (Button)v.findViewById(R.id.crime_reportButton);
+		reportButton.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v)
+			{
+				Intent i = new Intent(Intent.ACTION_SEND);
+				i.setType("text/plain");
+				i.putExtra(Intent.EXTRA_TEXT, getCrimeReport());
+				i.putExtra(Intent.EXTRA_SUBJECT, R.string.crime_report_subject);
+				
+				// Set the chooser so that the user can choose every time they push this button.
+				i = Intent.createChooser(i,  getString(R.string.send_report));
+				startActivity(i);
+			}
+		});
+		
+		// --- Suspect button ---
+		
+		// Show a list of contacts.
+		mSuspectButton = (Button)v.findViewById(R.id.crime_suspectButton);
+		mSuspectButton.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v)
+			{
+				Intent i = new Intent(Intent.ACTION_PICK,
+						ContactsContract.Contacts.CONTENT_URI);
+				startActivityForResult(i, REQUEST_CONTACT);
+			}
+		});
+		
+		// Set the suspect's name on the button.
+		if (mCrime.getSuspect() != null)
+		{
+			mSuspectButton.setText(mCrime.getSuspect());
+		}
+		
 		// Return the layout.
 		return v;
 	}
@@ -361,7 +406,8 @@ public class CrimeFragment extends Fragment
 	 */
 	private void showUpdatedDate()
 	{
-		mBtnDate.setText(DATE_FORMAT.format(mCrime.getDate() ) );
+		//mBtnDate.setText(DATE_FORMAT.format(mCrime.getDate() ) );
+		mBtnDate.setText(mCrime.getDate().toString());
 	}
 	
 	/**
@@ -455,6 +501,54 @@ public class CrimeFragment extends Fragment
 				showThumbnail();
 			}
 		}
+		
+		// --- Retrieve contact name ---
+		
+		else if (requestCode == REQUEST_CONTACT)
+		{
+			// This URI is a locator that points at the single contact the user picked.
+			Uri contactUri = resultData.getData();
+			
+			// Specify which field you want your query to return values for.
+			String[] queryFields = new String[] {
+					ContactsContract.Contacts.DISPLAY_NAME
+			};
+			
+			// Perform your query.
+			Cursor cursor = getActivity().getContentResolver()
+					.query(contactUri, queryFields, null, null, null);
+			
+			// Double-check that you actually got results
+			if (cursor.getCount() == 0)
+			{
+				cursor.close();
+				return;
+			}
+			
+			// Pull out the first column of the first row of data.
+			cursor.moveToFirst(); // first row
+			String suspect = cursor.getString(0);
+			mCrime.setSuspect(suspect);
+			
+			// Set the suspect's name on the button.
+			mSuspectButton.setText(suspect);
+			
+			cursor.close();
+		}
+	}
+	
+	/**
+	 * This is to check how many activities can respond to the passed-in intent.
+	 * Run this check in onCreateView() to disable options that the device will not be able to respond to.
+	 * If the OS cannot find a matching activity, then the app will crash.
+	 * An Android device is guaranteed to have an email app and a contacts app of one kind or another.
+	 */
+	@SuppressWarnings("unused")
+	private boolean isIntentSafe(Intent i)
+	{
+		PackageManager pm = getActivity().getPackageManager();
+		List<ResolveInfo> activities = pm.queryIntentActivities(i, 0);
+		return (activities.size() > 0);
 	}
 	
 	/**
@@ -551,10 +645,47 @@ public class CrimeFragment extends Fragment
 		}
 	}
 	
+	private String getCrimeReport()
+	{
+		String solvedString = null;
+		
+		if (mCrime.isSolved())
+		{
+			solvedString = getString(R.string.crime_report_solved);
+		}
+		else
+		{
+			solvedString = getString(R.string.crime_report_unsolved);
+		}
+		
+		String dateString = formatDateForReport(mCrime.getDate());
+		
+		String suspect = mCrime.getSuspect();
+		if (null == suspect)
+		{
+			suspect = getString(R.string.crime_report_no_suspect);
+		}
+		else
+		{
+			suspect = getString(R.string.crime_report_suspect, suspect);
+		}
+
+		String report = getString(R.string.crime_report,
+				mCrime.getTitle(), dateString, solvedString, suspect);
+		
+		return report;
+	}
+
+	private String formatDateForReport(Date date)
+	{
+		String dateFormat = "EEE, MMM dd";
+		return (String) DateFormat.format(dateFormat, date).toString();
+	}
+	
 	/**
 	 * Show a confirmation message before actually deleting.
 	 */
-	public static class DeleteConfirmationFragment extends DialogFragment
+	static class DeleteConfirmationFragment extends DialogFragment
 	{
 		// Store the Crime that was passed in.
 		static Crime sCrime;
@@ -609,7 +740,7 @@ public class CrimeFragment extends Fragment
 				.create();
 		}
 	}
-
+	
 	/**
 	 * Show a toast message.
 	 */
