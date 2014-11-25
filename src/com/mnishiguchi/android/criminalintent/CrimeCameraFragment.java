@@ -91,8 +91,7 @@ public class CrimeCameraFragment extends Fragment
 			{
 				Intent i = new Intent();
 				i.putExtra(EXTRA_PHOTO_FILENAME, filename);
-				int orientation = mOrientation.mode;
-				i.putExtra(EXTRA_PHOTO_ORIENTATION, orientation);
+				i.putExtra(EXTRA_PHOTO_ORIENTATION, mOrientation.mode);
 				getActivity().setResult(Activity.RESULT_OK, i);
 			}
 			else // Error occurred.

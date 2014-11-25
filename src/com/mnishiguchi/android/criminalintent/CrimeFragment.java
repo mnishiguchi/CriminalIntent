@@ -384,6 +384,7 @@ public class CrimeFragment extends Fragment
 		
 		// Check the orientation. If necessary, change the bitmap orientation.
 		int orientation = Orientation.get(getActivity()).mode;
+		
 		if (orientation == Orientation.PORTRAIT_INVERTED ||
 				orientation == Orientation.PORTRAIT_NORMAL)
 		{
@@ -439,9 +440,10 @@ public class CrimeFragment extends Fragment
 		
 		else if (requestCode == REQUEST_PHOTO)
 		{
-			
+			// Retrieve data from the passed-in Intent.
 			String filename = resultData.getStringExtra(CrimeCameraFragment.EXTRA_PHOTO_FILENAME);
-			int orientation = resultData.getIntExtra(CrimeCameraFragment.EXTRA_PHOTO_ORIENTATION, -1);
+			int orientation = resultData.getIntExtra(CrimeCameraFragment.EXTRA_PHOTO_ORIENTATION, Orientation.NO_DATA);
+			
 			if (filename != null)
 			{
 				// Create a new Photo object based on the filename sent from CrimeCameraFragment.

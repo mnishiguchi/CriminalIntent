@@ -16,7 +16,11 @@ class Orientation
 	// Store an instance of the Orientation.
 	private static Orientation sOrientation;
 	
-	// Store orientation data.
+	/**
+	 * Store orientation data.
+	 * NO_DATA, PORTRAIT_NORMAL, PORTRAIT_INVERTED,
+	 * LANDSCAPE_NORMAL, LANDSCAPE_INVERTED
+	 */
 	int mode = NO_DATA;
 	
 	/** 

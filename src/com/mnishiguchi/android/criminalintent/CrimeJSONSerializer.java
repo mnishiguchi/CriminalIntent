@@ -25,7 +25,7 @@ import android.widget.Toast;
 
 public class CrimeJSONSerializer
 {
-	private static final String TAG = "CriminalIntent - CrimeJSONSerializer";
+	private static final String TAG = "CriminalIntent.CrimeJSONSerializer";
 	
 	private Context mContext;
 	private String mFileName;

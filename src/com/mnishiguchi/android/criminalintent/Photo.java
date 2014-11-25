@@ -17,31 +17,27 @@ import android.util.Log;
 /**
  * Creating a Photo class is useful when we need to display a caption or handling a touch event.
  */
-public class Photo
+class Photo
 {
 	private static final String TAG = "CriminalIntent.Photo";
 	
+	// JSON keys
 	private static final String JSON_FILENAME ="filename";
 	private static final String JSON_ORIENTATION = "orientation";
 	
 	private String mFilename;
 	private final int mOrientation;
 	
-	/**
-	 * 
-	 */
-
-	
 		/**
 		 * Constructor to create a Photo representing existing file on disk
 		 */
-		public Photo(String filename, int orientation)
+		Photo(String filename, int orientation)
 		{
 			mFilename = filename;
 			mOrientation = orientation;
 		}
 	
-		public int getOrientation()
+		int getOrientation()
 		{
 			return mOrientation;
 		}
@@ -50,7 +46,7 @@ public class Photo
 	 * Constructor to create a Photo from a specified JSON filename.
 	 * Used when saving and loading its property of type Photo.
 	 */
-	public Photo (JSONObject json) throws JSONException
+	Photo (JSONObject json) throws JSONException
 	{
 		mFilename = json.getString(JSON_FILENAME);
 		mOrientation = json.getInt(JSON_ORIENTATION);
@@ -59,17 +55,18 @@ public class Photo
 	/**
 	 * Serialize this Photo into a JSON object.
 	 */
-	public JSONObject toJSON() throws JSONException
+	JSONObject toJSON() throws JSONException
 	{
 		JSONObject json = new JSONObject();
 		json.put(JSON_FILENAME, mFilename);
+		json.put(JSON_ORIENTATION, mOrientation);
 		return json;
 	}
 	
 	/**
 	 * @return this Photo's filename
 	 */
-	public String getFilename()
+	String getFilename()
 	{
 		return mFilename;
 	}
@@ -77,11 +74,11 @@ public class Photo
 	/**
 	 *  Get the absolute path to the file where this photo's image data  is stored.
 	 */
-	public String getAbsolutePath(Context context)
+	String getAbsolutePath(Context context)
 	{
-		File externalDir = context.getApplicationContext()
+		File dir = context.getApplicationContext()
 				.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-		File file = new File(externalDir, getFilename());
+		File file = new File(dir, getFilename());
 		return file.getAbsolutePath(); // Convert the filepath to string.
 	}
 	
@@ -89,7 +86,7 @@ public class Photo
 	 * @param context
 	 * @return true if this image's file was deleted from disk, false otherwise.
 	 */
-	public boolean deletePhoto(Context context)
+	boolean deletePhoto(Context context)
 	{
 		// Get the image data file on disk.
 		String path = this.getAbsolutePath(context);
@@ -105,7 +102,7 @@ public class Photo
 	/**
 	 * Get a BitmapDrawable from disk for this photo object.
 	 */
-	public BitmapDrawable loadBitmapDrawable(Activity activity)
+	BitmapDrawable loadBitmapDrawable(Activity activity)
 	{
 		String path = this.getAbsolutePath(activity);
 
