@@ -383,11 +383,15 @@ import android.widget.Toast;
 		// Update the listView.
 		((CrimeAdapter)getListAdapter()).notifyDataSetChanged();
 		
-		// Update the selection.
-		setLastItemSelected();
-		
-		// Clear the action bar title.
-		getActivity().setTitle("");
+		// For tablets only.
+		if (Utils.hasTwoPane(getActivity()))
+		{
+			// Update the selection.
+			setLastItemSelected();
+			
+			// Clear the action bar title.
+			getActivity().setTitle("");
+		}
 		
 		// callback
 		mCallbacks.onCrimeSelected(crime);

@@ -22,13 +22,14 @@ public class CrimeListActivity extends SingleFragmentActivity
 	@Override
 	protected int getLayoutResId()
 	{
-		return R.layout.activity_twopane;
+		// an alias resource defined in res/values/refs.xml
+		return R.layout.activity_masterdetail; 
 	}
 
 	@Override
 	public void onCrimeAdded(Crime crime)
 	{
-
+		// Required but not used in this implementation.
 	}
 	
 	@Override
@@ -91,7 +92,7 @@ public class CrimeListActivity extends SingleFragmentActivity
 	@Override
 	public void onListItemsDeleted(Crime[] selectedItems)
 	{
-		// removeDetailFragment();
+		// Required but not used in this implementation.
 	}
 
 	@Override
