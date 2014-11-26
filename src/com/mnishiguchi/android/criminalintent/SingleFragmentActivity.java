@@ -15,10 +15,21 @@ public abstract class SingleFragmentActivity extends FragmentActivity
 	/** Return an instance of the fragment that the activity is hosting. */
 	protected abstract Fragment createFragment();
 	
+	/**
+	 * Override this method for a subclass to be able to
+	 * provide its own resource ID for the layout.
+	 * @return resource id for the layout,
+	 * which will be passed into setContentView() in onCreate().
+	 */
+	protected int getLayoutResId()
+	{
+		return R.layout.activity_fragment;
+	}
+	
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_fragment);
+		setContentView(getLayoutResId());
 		
 		/*FragmentManager - Maintains a back stack of fragment transactions. */
 		/*FragmentTransaction - Used to add, remove, attach, detach,
@@ -28,7 +39,7 @@ public abstract class SingleFragmentActivity extends FragmentActivity
 		FragmentManager fm = getSupportFragmentManager();
 		
 		// Get a reference to the fragment list associated with the fragment_container.
-		Fragment fragment = fm.findFragmentById(R.id.fragment_container);
+		Fragment fragment = fm.findFragmentById(R.id.fragmentContainer);
 		
 		// Check if there is already a fragment in the fragment list.
 		if (fragment == null)
@@ -37,7 +48,7 @@ public abstract class SingleFragmentActivity extends FragmentActivity
 			
 			// Add the Fragment to the list.
 			fm.beginTransaction()
-					.add(R.id.fragment_container, fragment)
+					.add(R.id.fragmentContainer, fragment)
 					.commit();
 		}
 	}

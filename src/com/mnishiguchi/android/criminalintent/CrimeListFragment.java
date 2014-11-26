@@ -2,14 +2,19 @@ package com.mnishiguchi.android.criminalintent;
 
 import java.util.ArrayList;
 
+import com.mnishiguchi.android.criminalintent.CrimeFragment.DetailCallbacks;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.ListFragment;
+import android.util.Log;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -26,9 +31,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class CrimeListFragment extends ListFragment
+@SuppressLint("ResourceAsColor") public class CrimeListFragment extends ListFragment
 {
-	private static final String TAG = "CrimeListFragment";
+	private static final String TAG = "CriminalIntent.CrimeListFragment";
 	
 	private static final String DIALOG_DELETE = "delete";
 	
@@ -40,6 +45,43 @@ public class CrimeListFragment extends ListFragment
 	
 	// The state of the Action Bar's subtitle.
 	private boolean mSubtitleVisible;
+	
+	private int mPositionSelected;
+	
+	private ListCallbacks mCallbacks;
+	
+	/**
+	 * Required interface for hosting activities.
+	 */
+	public interface ListCallbacks
+	{
+		void onCrimeSelected(Crime crime);
+		void onActionMode();
+		void onCrimeDeleted(Crime[] selectedItems);
+	}
+	
+	@Override
+	public void onAttach(Activity activity)
+	{
+		super.onAttach(activity);
+		
+		// Ensure that the hosting activity has implemented the callbacks
+		try
+		{
+			mCallbacks = (ListCallbacks)activity;
+		}
+		catch (ClassCastException e)
+		{
+			throw new ClassCastException(activity.toString() + " must implement CrimeListFragment.Callbacks");
+		}
+	}
+	
+	@Override
+	public void onDetach()
+	{
+		super.onDetach();
+		mCallbacks = null;
+	}
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState)
@@ -87,7 +129,7 @@ public class CrimeListFragment extends ListFragment
 			@Override
 			public void onClick(View v)
 			{
-				registerNewCrime();
+				addNewCrime();
 			}
 		});
 		
@@ -95,6 +137,7 @@ public class CrimeListFragment extends ListFragment
 		{
 			getActivity().getActionBar().setSubtitle(R.string.subtitle);
 		}
+		
 		// Note:
 		// Get a ListView object by using android.R.id.list resource ID
 		// instead of getListView() because the layout view is not created yet.
@@ -102,59 +145,69 @@ public class CrimeListFragment extends ListFragment
 		
 		// --- Contexual Action Bar ---
 		
-		// Define responce to multi-choice.
-		listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
-		
-		listView.setMultiChoiceModeListener(new MultiChoiceModeListener() {
+		if (Utils.hasTwoPane(getActivity()))
+		{
+			listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+		}
+		else
+		{
+			// Define responce to multi-choice.
+			listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+			
+			listView.setMultiChoiceModeListener(new MultiChoiceModeListener() {
 
-			@Override
-			public boolean onCreateActionMode(ActionMode mode, Menu menu)
-			{
-				// Inflate the menu using a special inflater defined in the ActionMode class.
-				MenuInflater inflater = mode.getMenuInflater();
-				inflater.inflate(R.menu.crime_list_item_context, menu);
-				return true;
-			}
-				
-			@Override
-			public boolean onPrepareActionMode(ActionMode mode, Menu menu)
-			{
-				return false; // Return false if nothing is done
-			}
-
-			@Override
-			public boolean onActionItemClicked(ActionMode mode, MenuItem item)
-			{
-				switch (item.getItemId())
+				@Override
+				public boolean onCreateActionMode(ActionMode mode, Menu menu)
 				{
-					case R.id.menu_item_delete_crime:
-						
-						// Show Delete Confirmation dialog.
-						DeleteConfirmationFragment.newInstance(getSelectedItems())
-							.show(getActivity().getSupportFragmentManager(), DIALOG_DELETE);
-
-						mode.finish(); // Action picked, so close the CAB
-						
-						return true;
+					// Inflate the menu using a special inflater defined in the ActionMode class.
+					MenuInflater inflater = mode.getMenuInflater();
+					inflater.inflate(R.menu.crime_list_item_context, menu);
 					
-					default:
-						return false;
+					// Call back.
+					mCallbacks.onActionMode();
+					return true;
 				}
-			}
+					
+				@Override
+				public boolean onPrepareActionMode(ActionMode mode, Menu menu)
+				{
+					return false; // Return false if nothing is done
+				}
 
-			@Override
-			public void onDestroyActionMode(ActionMode mode)
-			{
-				// Required, but not used in this implementation.
-			}
+				@Override
+				public boolean onActionItemClicked(ActionMode mode, MenuItem item)
+				{
+					switch (item.getItemId())
+					{
+						case R.id.menu_item_delete_crime:
+							
+							// Show Delete Confirmation dialog.
+							DeleteConfirmationFragment.newInstance(getSelectedItems())
+								.show(getActivity().getSupportFragmentManager(), DIALOG_DELETE);
 
-			@Override
-			public void onItemCheckedStateChanged(ActionMode mode,
-					int position, long id, boolean checked)
-			{
-				mode.setTitle(getListView().getCheckedItemCount() + " item(s) selected");
-			}
-		});
+							mode.finish(); // Action picked, so close the CAB
+							
+							return true;
+						
+						default:
+							return false;
+					}
+				}
+
+				@Override
+				public void onDestroyActionMode(ActionMode mode)
+				{
+					// Required, but not used in this implementation.
+				}
+
+				@Override
+				public void onItemCheckedStateChanged(ActionMode mode,
+						int position, long id, boolean checked)
+				{
+					mode.setTitle(getListView().getCheckedItemCount() + " item(s) selected");
+				}
+			});
+		}
 
 		// Return the layout view.
 		return v;
@@ -206,7 +259,7 @@ public class CrimeListFragment extends ListFragment
 			// --- NEW ---
 			
 			case R.id.menu_item_new_crime:
-				registerNewCrime();
+				addNewCrime();
 				return true;  // No further processing is necessary.
 			
 			// --- Show subtitle ---
@@ -265,25 +318,30 @@ public class CrimeListFragment extends ListFragment
 	{
 		// Get the selected item.
 		Crime crime = ( (CrimeAdapter) getListAdapter() ).getItem(position);
-
-		// Start the PagerActivity with the crime's UUID as an extra.
-		Intent i = new Intent(getActivity(), PagerActivity.class);
-		i.putExtra(CrimeFragment.EXTRA_CRIME_ID, crime.getId() );  // UUID is a Serializable object.
-		startActivity(i);
+		
+		// keep the selected position
+		mPositionSelected = position;
+		
+		// Call back.
+		mCallbacks.onCrimeSelected(crime);
 	}
 	
-	/**
-	 * Create a new Crime object and register it to the CrimeLab.
-	 * Proceed to the edit page.
-	 */
-	private void registerNewCrime()
+	private void addNewCrime()
 	{
+		// Create and add a new Crime object to the CrimeLab's list.
 		Crime crime = new Crime();
 		CrimeLab.get(getActivity() ).addCrime(crime) ;
-			
-		Intent i = new Intent(getActivity(), PagerActivity.class);
-		i.putExtra(CrimeFragment.EXTRA_CRIME_ID, crime.getId() );
-		startActivityForResult(i, 0);
+		
+		// Update the listView.
+		((CrimeAdapter)getListAdapter()).notifyDataSetChanged();
+		
+		// callback
+		mCallbacks.onCrimeSelected(crime);
+	}
+	
+	public void updateUI()
+	{
+		((CrimeAdapter) getListAdapter()).notifyDataSetChanged();
 	}
 	
 	/**
@@ -382,6 +440,9 @@ public class CrimeListFragment extends ListFragment
 		
 		// Update the ListView.
 		adapter.notifyDataSetChanged();
+		
+		// Call back.
+		mCallbacks.onCrimeDeleted(selectedItems);
 		
 		Toast.makeText(getActivity(), count + " item(s) deleted", Toast.LENGTH_SHORT).show();
 		return count;

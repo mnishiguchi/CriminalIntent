@@ -14,6 +14,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 public class PagerActivity extends FragmentActivity
+		implements CrimeFragment.DetailCallbacks
 {
 	private static final String TAG = "CriminalIntent.PagerActivity";
 	
@@ -129,5 +130,17 @@ public class PagerActivity extends FragmentActivity
 	private void showToast(String msg)
 	{
 		Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+	}
+
+	@Override
+	public void onCrimeUpdated(Crime crime)
+	{
+		// Required but not used in this implementation.
+	}
+
+	@Override
+	public void onCrimeDeleted(Crime crime)
+	{
+		// Required but not used in this implementation.
 	}
 }

@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import com.mnishiguchi.android.criminalintent.CrimeListFragment.ListCallbacks;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -78,6 +80,40 @@ public class CrimeFragment extends Fragment
 	// Reference to CAB.
 	private ActionMode mActionMode;
 	
+	private DetailCallbacks mCallbacks;
+	
+	/**
+	 * Required interface for hosting activities.
+	 */
+	public interface DetailCallbacks
+	{
+		void onCrimeUpdated(Crime crime);
+		void onCrimeDeleted(Crime crime);
+	}
+	
+	@Override
+	public void onAttach(Activity activity)
+	{
+		super.onAttach(activity);
+		
+		// Ensure that the hosting activity has implemented the callbacks
+		try
+		{
+			mCallbacks = (DetailCallbacks)activity;
+		}
+		catch (ClassCastException e)
+		{
+			throw new ClassCastException(activity.toString() + " must implement CrimeFragment.Callbacks");
+		}
+	}
+	
+	@Override
+	public void onDetach()
+	{
+		super.onDetach();
+		mCallbacks = null;
+	}
+	
 	/**
 	 * Creates a new fragment instance and attaches the specified UUID as fragment's arguments.
 	 * @param crimeId a UUID
@@ -144,7 +180,9 @@ public class CrimeFragment extends Fragment
 			@Override
 			public void onTextChanged(CharSequence input, int start, int before, int count)
 			{
-				mCrime.setTitle(input.toString() );
+				mCrime.setTitle(input.toString());
+				mCallbacks.onCrimeUpdated(mCrime);
+				getActivity().setTitle(mCrime.getTitle());
 			}
 			
 			@Override
@@ -201,6 +239,7 @@ public class CrimeFragment extends Fragment
 			{
 				// Set the crime's solved property.
 				mCrime.setSolved(isChecked);
+				mCallbacks.onCrimeUpdated(mCrime);
 			}
 		} );
 		
@@ -477,6 +516,7 @@ public class CrimeFragment extends Fragment
 			
 			// Update the date in the model layer(CrimeLab)
 			mCrime.setDate(date);
+			mCallbacks.onCrimeUpdated(mCrime);
 			
 			// Set the updated date on the mBtnDate.
 			showUpdatedDate();
@@ -497,6 +537,7 @@ public class CrimeFragment extends Fragment
 				
 				// Attach it to the crime.
 				mCrime.setPhoto(photo);
+				mCallbacks.onCrimeUpdated(mCrime);
 				
 				showThumbnail();
 			}
@@ -529,6 +570,7 @@ public class CrimeFragment extends Fragment
 			cursor.moveToFirst(); // first row
 			String suspect = cursor.getString(0);
 			mCrime.setSuspect(suspect);
+			mCallbacks.onCrimeUpdated(mCrime);
 			
 			// Set the suspect's name on the button.
 			mSuspectButton.setText(suspect);
@@ -608,11 +650,17 @@ public class CrimeFragment extends Fragment
 		CrimeLab.get(getActivity()).deleteCrime(crime);
 		
 		// Update the pager adapter.
-		((PagerActivity)getActivity()).getPagerAdapter().notifyDataSetChanged();
-
-		// Toast a message and finish this activity.
-		showToast(crimeTitle + " has been deleted.");
-		getActivity().finish();
+		if (hasTwoPane()) // Tablet
+		{
+			mCallbacks.onCrimeDeleted(mCrime);
+		}
+		else // Phone
+		{
+			((PagerActivity)getActivity()).getPagerAdapter().notifyDataSetChanged();
+			// Toast a message and finish this activity.
+			showToast(crimeTitle + " has been deleted.");
+			getActivity().finish();
+		}
 	}
 	
 	/**
@@ -645,6 +693,9 @@ public class CrimeFragment extends Fragment
 		}
 	}
 	
+	/**
+	 * Create a string for the reporting purpose.
+	 */
 	private String getCrimeReport()
 	{
 		String solvedString = null;
@@ -663,7 +714,7 @@ public class CrimeFragment extends Fragment
 		String suspect = mCrime.getSuspect();
 		if (null == suspect)
 		{
-			suspect = getString(R.string.crime_report_no_suspect);
+			suspect = getString(R.string.crime_report_no_suspect); // Interpolaton
 		}
 		else
 		{
@@ -671,7 +722,7 @@ public class CrimeFragment extends Fragment
 		}
 
 		String report = getString(R.string.crime_report,
-				mCrime.getTitle(), dateString, solvedString, suspect);
+				mCrime.getTitle(), dateString, solvedString, suspect);  // Interpolaton
 		
 		return report;
 	}
@@ -747,5 +798,15 @@ public class CrimeFragment extends Fragment
 	private void showToast(String msg)
 	{
 		Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
+	}
+	
+	/**
+	 * Determine which interface was inflated, single-pane or two-pane.
+	 * @return true if in the two-pane mode, else false.
+	 */
+	private boolean hasTwoPane()
+	{
+		// Check whether the layout has a detailFragmentContainer.
+		return (getActivity().findViewById(R.id.detailFragmentContainer) != null);
 	}
 }  // end class
