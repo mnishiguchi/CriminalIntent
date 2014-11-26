@@ -143,4 +143,11 @@ public class PagerActivity extends FragmentActivity
 	{
 		// Required but not used in this implementation.
 	}
+
+	@Override
+	public void onCrimeAdded(Crime crime)
+	{
+		// TODO Auto-generated method stub
+		
+	}
 }

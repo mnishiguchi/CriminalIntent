@@ -26,9 +26,15 @@ public class CrimeListActivity extends SingleFragmentActivity
 	}
 
 	@Override
+	public void onCrimeAdded(Crime crime)
+	{
+
+	}
+	
+	@Override
 	public void onCrimeSelected(Crime crime)
 	{
-		if (hasTwoPane()) // Tablet
+		if (Utils.hasTwoPane(this)) // Tablet
 		{
 			FragmentManager fm = getSupportFragmentManager();
 			FragmentTransaction ft = fm.beginTransaction();
@@ -61,25 +67,29 @@ public class CrimeListActivity extends SingleFragmentActivity
 				fm.findFragmentById(R.id.fragmentContainer);
 		listFragment.updateUI();
 	}
-	
-	/**
-	 * Determine which interface was inflated, single-pane or two-pane.
-	 * @return true if in the two-pane mode, else false.
-	 */
-	private boolean hasTwoPane()
-	{
-		// Check whether the layout has a detailFragmentContainer.
-		return (findViewById(R.id.detailFragmentContainer) != null);
-	}
 
 	@Override
 	public void onCrimeDeleted(Crime crime)
 	{
+		// Clear the action bar title.
+		setTitle("");
+		
+		// Clear the detailFragmentContainer.
 		removeDetailFragment();
+		
+		// Access the listFragment.
+		FragmentManager fm = getSupportFragmentManager();
+		CrimeListFragment listFragment = (CrimeListFragment)fm.findFragmentById(R.id.fragmentContainer);
+
+		// Clear the selection.
+		listFragment.clearListSelection();
+		
+		// Update the listView
+		listFragment.updateUI();
 	}
 	
 	@Override
-	public void onCrimeDeleted(Crime[] selectedItems)
+	public void onListItemsDeleted(Crime[] selectedItems)
 	{
 		// removeDetailFragment();
 	}

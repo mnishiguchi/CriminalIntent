@@ -24,6 +24,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AbsListView.MultiChoiceModeListener;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -57,7 +58,7 @@ import android.widget.Toast;
 	{
 		void onCrimeSelected(Crime crime);
 		void onActionMode();
-		void onCrimeDeleted(Crime[] selectedItems);
+		void onListItemsDeleted(Crime[] selectedItems);
 	}
 	
 	@Override
@@ -122,7 +123,11 @@ import android.widget.Toast;
 		// Inflate a custom layout with list & empty.
 		View v = inflater.inflate(R.layout.fragment_crime_list, parent, false);
 		
-		// Set a listener to the emptylist's button.
+		// Note:
+		// Get a ListView object by using android.R.id.list resource ID
+		// instead of getListView() because the layout view is not created yet.
+		ListView listView = (ListView)v.findViewById(android.R.id.list);
+		
 		Button btnAddCrime = (Button) v.findViewById(R.id.btn_add_crime);
 		btnAddCrime.setOnClickListener(new OnClickListener() {
 
@@ -137,11 +142,6 @@ import android.widget.Toast;
 		{
 			getActivity().getActionBar().setSubtitle(R.string.subtitle);
 		}
-		
-		// Note:
-		// Get a ListView object by using android.R.id.list resource ID
-		// instead of getListView() because the layout view is not created yet.
-		ListView listView = (ListView)v.findViewById(android.R.id.list);
 		
 		// --- Contexual Action Bar ---
 		
@@ -220,7 +220,6 @@ import android.widget.Toast;
 		
 		// Reload the list.
 		( (CrimeAdapter) getListAdapter() ).notifyDataSetChanged();
-		
 	}
 	
 	/**
@@ -322,26 +321,11 @@ import android.widget.Toast;
 		// keep the selected position
 		mPositionSelected = position;
 		
+		// Update the action bar title.
+		getActivity().setTitle(crime.getTitle());
+		
 		// Call back.
 		mCallbacks.onCrimeSelected(crime);
-	}
-	
-	private void addNewCrime()
-	{
-		// Create and add a new Crime object to the CrimeLab's list.
-		Crime crime = new Crime();
-		CrimeLab.get(getActivity() ).addCrime(crime) ;
-		
-		// Update the listView.
-		((CrimeAdapter)getListAdapter()).notifyDataSetChanged();
-		
-		// callback
-		mCallbacks.onCrimeSelected(crime);
-	}
-	
-	public void updateUI()
-	{
-		((CrimeAdapter) getListAdapter()).notifyDataSetChanged();
 	}
 	
 	/**
@@ -388,6 +372,30 @@ import android.widget.Toast;
 			
 			return convertView;
 		}
+	}
+	
+	private void addNewCrime()
+	{
+		// Create and add a new Crime object to the CrimeLab's list.
+		Crime crime = new Crime();
+		CrimeLab.get(getActivity() ).addCrime(crime) ;
+		
+		// Update the listView.
+		((CrimeAdapter)getListAdapter()).notifyDataSetChanged();
+		
+		// Update the selection.
+		setLastItemSelected();
+		
+		// Clear the action bar title.
+		getActivity().setTitle("");
+		
+		// callback
+		mCallbacks.onCrimeSelected(crime);
+	}
+	
+	public void updateUI()
+	{		
+		((CrimeAdapter) getListAdapter()).notifyDataSetChanged();
 	}
 	
 	/**
@@ -442,16 +450,36 @@ import android.widget.Toast;
 		adapter.notifyDataSetChanged();
 		
 		// Call back.
-		mCallbacks.onCrimeDeleted(selectedItems);
+		mCallbacks.onListItemsDeleted(selectedItems);
 		
 		Toast.makeText(getActivity(), count + " item(s) deleted", Toast.LENGTH_SHORT).show();
 		return count;
 	}
 	
 	/**
+	 * Set the last list item selected.
+	 */
+	void setLastItemSelected()
+	{
+		CrimeAdapter adapter = (CrimeAdapter)getListAdapter();
+		int lastIndex = adapter.getCount() - 1;
+		getListView().setItemChecked(lastIndex, true);
+	}
+	
+	/**
+	 * Set the last list item selected.
+	 */
+	void clearListSelection()
+	{
+			CrimeAdapter adapter = (CrimeAdapter)getListAdapter();
+			getListView().clearChoices();
+			adapter.notifyDataSetChanged();
+	}
+	
+	/**
 	 * Show a confirmation message before actually deleting selected items.
 	 */
-	public static class DeleteConfirmationFragment extends DialogFragment
+	static class DeleteConfirmationFragment extends DialogFragment
 	{
 		// Store the selected list item that was passed in.
 		static Crime[] sSelectedItems;

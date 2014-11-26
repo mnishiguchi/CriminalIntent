@@ -19,15 +19,5 @@ public class CrimeActivity extends SingleFragmentActivity
 		// Return an instance of the fragment that the activity is hosting. 
 		return CrimeFragment.newInstance(crimeId);
 	}
-
-	/**
-	 * Determine which interface was inflated, single-pane or two-pane.
-	 * @return true if in the two-pane mode, else false.
-	 */
-	private boolean hasTwoPane()
-	{
-		// Check whether the layout has a detailFragmentContainer.
-		return (findViewById(R.id.detailFragmentContainer) != null);
-	}
 }
 

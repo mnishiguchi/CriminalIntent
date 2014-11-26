@@ -87,6 +87,7 @@ public class CrimeFragment extends Fragment
 	 */
 	public interface DetailCallbacks
 	{
+		void onCrimeAdded(Crime crime);
 		void onCrimeUpdated(Crime crime);
 		void onCrimeDeleted(Crime crime);
 	}
@@ -162,7 +163,7 @@ public class CrimeFragment extends Fragment
 		View v = inflater.inflate(R.layout.fragment_crime, parent, false);
 		
 		// If a parent activity is registered in the manifest file, enable the Up button.
-		if (NavUtils.getParentActivityIntent(getActivity() ) != null)
+		if (!Utils.hasTwoPane(getActivity()) && NavUtils.getParentActivityIntent(getActivity() ) != null)
 		{
 			getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
 		}
@@ -181,8 +182,12 @@ public class CrimeFragment extends Fragment
 			public void onTextChanged(CharSequence input, int start, int before, int count)
 			{
 				mCrime.setTitle(input.toString());
-				mCallbacks.onCrimeUpdated(mCrime);
+				
+				// Update the action bar title.
 				getActivity().setTitle(mCrime.getTitle());
+				
+				// Notify it.
+				mCallbacks.onCrimeUpdated(mCrime);
 			}
 			
 			@Override
@@ -530,6 +535,12 @@ public class CrimeFragment extends Fragment
 			String filename = resultData.getStringExtra(CrimeCameraFragment.EXTRA_PHOTO_FILENAME);
 			int orientation = resultData.getIntExtra(CrimeCameraFragment.EXTRA_PHOTO_ORIENTATION, Orientation.NO_DATA);
 			
+			// Delete the old photo, if any.
+			if (mCrime.getPhoto() != null)
+			{
+				deletePhoto();
+			}
+			
 			if (filename != null)
 			{
 				// Create a new Photo object based on the filename sent from CrimeCameraFragment.
@@ -537,6 +548,8 @@ public class CrimeFragment extends Fragment
 				
 				// Attach it to the crime.
 				mCrime.setPhoto(photo);
+				
+				// Notify it.
 				mCallbacks.onCrimeUpdated(mCrime);
 				
 				showThumbnail();
@@ -636,6 +649,11 @@ public class CrimeFragment extends Fragment
 	 	}
 	}
 	
+	private void setActionBarTitle(String title)
+	{
+		// Update the action bar title.
+		getActivity().setTitle(title);
+	}
 	/**
 	 * Delete the currently shown Crime from CrimeLab's list. Update the Pager.
 	 * Finish this fragment. Show a toast message.
@@ -650,7 +668,7 @@ public class CrimeFragment extends Fragment
 		CrimeLab.get(getActivity()).deleteCrime(crime);
 		
 		// Update the pager adapter.
-		if (hasTwoPane()) // Tablet
+		if (Utils.hasTwoPane(getActivity())) // Tablet
 		{
 			mCallbacks.onCrimeDeleted(mCrime);
 		}
@@ -798,15 +816,5 @@ public class CrimeFragment extends Fragment
 	private void showToast(String msg)
 	{
 		Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
-	}
-	
-	/**
-	 * Determine which interface was inflated, single-pane or two-pane.
-	 * @return true if in the two-pane mode, else false.
-	 */
-	private boolean hasTwoPane()
-	{
-		// Check whether the layout has a detailFragmentContainer.
-		return (getActivity().findViewById(R.id.detailFragmentContainer) != null);
 	}
 }  // end class
