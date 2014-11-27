@@ -28,19 +28,27 @@ class Photo
 	private String mFilename;
 	private final int mOrientation;
 	
-		/**
-		 * Constructor to create a Photo representing existing file on disk
-		 */
-		Photo(String filename, int orientation)
-		{
-			mFilename = filename;
-			mOrientation = orientation;
-		}
+	/**
+	 * Standadize on the storage directory for photos.
+	 */
+	static File getStorageDir(Context context)
+	{
+		return context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+	}
 	
-		int getOrientation()
-		{
-			return mOrientation;
-		}
+	/**
+	 * Constructor to create a Photo representing existing file on disk
+	 */
+	Photo(String filename, int orientation)
+	{
+		mFilename = filename;
+		mOrientation = orientation;
+	}
+	
+	int getOrientation()
+	{
+		return mOrientation;
+	}
 		
 	/**
 	 * Constructor to create a Photo from a specified JSON filename.

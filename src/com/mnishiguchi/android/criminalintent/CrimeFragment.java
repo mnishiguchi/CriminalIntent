@@ -1,5 +1,7 @@
 package com.mnishiguchi.android.criminalintent;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -8,13 +10,20 @@ import java.util.UUID;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Camera;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -73,6 +82,9 @@ public class CrimeFragment extends Fragment
 	
 	// Reference to CAB.
 	private ActionMode mActionMode;
+	
+	private String mPhotoFilePath;
+	private Uri mCapturedImageURI;
 	
 	/**
 	 * Creates a new fragment instance and attaches the specified UUID as fragment's arguments.
@@ -302,9 +314,62 @@ public class CrimeFragment extends Fragment
 			@Override
 			public void onClick(View v)
 			{
+				// Create a file name with a random UUID.
+				String filename = UUID.randomUUID().toString() + ".jpeg";
+				
+				Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+				// Ensure that there's a camera activity to handle the intent
+				if (i.resolveActivity(getActivity().getPackageManager()) != null)
+				{
+					// Create the File where the photo should go
+					File photoFile = null;
+					try
+					{
+						photoFile = PictureUtils.createImageFile(getActivity());
+						
+						// Remember the path.
+						mPhotoFilePath = photoFile.getAbsolutePath();
+						
+						Log.e(TAG, "After createImageFile(): " + mPhotoFilePath);
+						if (photoFile.exists() && photoFile.isDirectory())
+						{
+							Log.e(TAG, "File already exists and is a directory");
+						}
+							Log.d(TAG, photoFile.toString());
+					}
+					catch (IOException e) 
+					{
+						// Error occurred while creating the File
+						Log.e(TAG, "Error: " + e + ". in mPhotoButton.onClickListener." + photoFile);
+					}
+					
+					// Continue only if the File was successfully created
+					if (photoFile != null)
+					{
+						i.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
+						startActivityForResult(i, REQUEST_PHOTO);
+					}
+/*
+				// Create the File where the photo should go.
+				File path = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+				File photoFile = new File(path, filename);
+				
+				if (photoFile.exists() && photoFile.isDirectory())
+				{
+					Log.e(TAG, "File already exists and is a directory");
+				}
+				
+				// Continue only if the File was successfully created
+				if (photoFile != null)
+				{
+					i.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
+					startActivityForResult(i, REQUEST_PHOTO);
+				}
+*/				
 				// Start the camera, requesting the photo's filename, if one taken.
-				Intent i = new Intent(getActivity(), CrimeCameraActivity.class);
-				startActivityForResult(i, REQUEST_PHOTO);
+				//Intent i = new Intent(getActivity(), CrimeCameraActivity.class);
+				//startActivityForResult(i, REQUEST_PHOTO);
+				}
 			}
 		});
 		
@@ -441,8 +506,13 @@ public class CrimeFragment extends Fragment
 		else if (requestCode == REQUEST_PHOTO)
 		{
 			// Retrieve data from the passed-in Intent.
-			String filename = resultData.getStringExtra(CrimeCameraFragment.EXTRA_PHOTO_FILENAME);
-			int orientation = resultData.getIntExtra(CrimeCameraFragment.EXTRA_PHOTO_ORIENTATION, Orientation.NO_DATA);
+			//String filename = resultData.getStringExtra(CrimeCameraFragment.EXTRA_PHOTO_FILENAME);
+			//int orientation = resultData.getIntExtra(CrimeCameraFragment.EXTRA_PHOTO_ORIENTATION, Orientation.NO_DATA);
+
+			Log.d(TAG, "After a photo captured, filepath: " + mPhotoFilePath);
+			
+			String filename = mPhotoFilePath;
+			int orientation = -1; // temp
 			
 			if (filename != null)
 			{
@@ -452,7 +522,13 @@ public class CrimeFragment extends Fragment
 				// Attach it to the crime.
 				mCrime.setPhoto(photo);
 				
+				Log.d(TAG, "File: " + photo.getFilename());
+				
 				showThumbnail();
+			}
+			else
+			{
+				showToast("Error saving photo: " + mPhotoFilePath);
 			}
 		}
 	}
@@ -610,6 +686,19 @@ public class CrimeFragment extends Fragment
 		}
 	}
 
+	private String getRealPathFromURI(Uri contentUri)
+	{
+	    String res = null;
+	    String[] proj = { MediaStore.Images.Media.DATA };
+	    Cursor cursor = getActivity().getContentResolver().query(contentUri, proj, null, null, null);
+	    if(cursor.moveToFirst()){;
+	       int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+	       res = cursor.getString(column_index);
+	    }
+	    cursor.close();
+	    return res;
+	}
+	
 	/**
 	 * Show a toast message.
 	 */

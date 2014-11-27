@@ -6,9 +6,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.UUID;
 
 import android.app.Activity;
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -18,6 +20,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Display;
 import android.widget.ImageView;
@@ -269,5 +272,39 @@ public class PictureUtils
 			return false;
 		}
 		return true;
+	}
+	
+	static File createImageFile(Context context) throws IOException
+	{
+		// Create a file name with a random UUID.
+		String filename = UUID.randomUUID().toString() + ".jpeg";
+		
+		File storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+		//File storageDir = Environment.getExternalStoragePublicDirectory(
+		//Environment.DIRECTORY_PICTURES);
+		
+		Log.d(TAG, "Directory: " + storageDir);
+		if (!storageDir.exists())
+		{
+			Log.d(TAG, "Directory does not exist; Creating new directory.");
+			storageDir.mkdirs();
+		}
+
+		File imageFile = File.createTempFile(
+				filename,   /* prefix */
+				".jpg",                     /* suffix */
+				storageDir              /* directory */
+		);
+	 
+		// Save a file: path for use with ACTION_VIEW intents
+		return imageFile;
+	}
+	
+	static String getCapturedPicturePath(Context context, Uri uri)
+	{
+		Cursor cursor = context.getContentResolver().query(uri, null, null, null, null); 
+		cursor.moveToFirst(); 
+		int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA); 
+		return cursor.getString(idx); 
 	}
 }
