@@ -183,9 +183,6 @@ public class CrimeFragment extends Fragment
 			{
 				mCrime.setTitle(input.toString());
 				
-				// Update the action bar title.
-				getActivity().setTitle(mCrime.getTitle());
-				
 				// Notify it.
 				mCallbacks.onCrimeUpdated(mCrime);
 			}
@@ -649,11 +646,6 @@ public class CrimeFragment extends Fragment
 	 	}
 	}
 	
-	private void setActionBarTitle(String title)
-	{
-		// Update the action bar title.
-		getActivity().setTitle(title);
-	}
 	/**
 	 * Delete the currently shown Crime from CrimeLab's list. Update the Pager.
 	 * Finish this fragment. Show a toast message.

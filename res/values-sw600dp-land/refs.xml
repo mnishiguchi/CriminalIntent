@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	
-	<!-- Alias resource value - sw600dp -->
+	<!-- Alias resource value - sw600dp-land -->
 	<item name="activity_masterdetail" type="layout">
-		@layout/activity_fragment
+		@layout/activity_twopane
 	</item>
 	
 </resources>

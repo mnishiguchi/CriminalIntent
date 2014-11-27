@@ -38,12 +38,12 @@ public class PagerActivity extends FragmentActivity
 		mCrimes = CrimeLab.get(this).getCrimes();
 		
 		// Configuration.
-		setUpPagerAdapter();
-		setUpInitialPagerItem();
-		setUpEventListener();
+		setupPagerAdapter();
+		setupInitialPagerItem();
+		setupPagerListener();
 	}
 	
-	private void setUpPagerAdapter()
+	private void setupPagerAdapter()
 	{
 		Log.d(TAG, "setUpPagerAdapter()");
 		FragmentManager fm = getSupportFragmentManager();
@@ -71,7 +71,7 @@ public class PagerActivity extends FragmentActivity
 	/**
 	 * Sets the initial page to the selected item on the ListFragment.
 	 */
-	private void setUpInitialPagerItem()
+	private void setupInitialPagerItem()
 	{
 		Log.d(TAG, "setUpInitialPagerItem()");
 		UUID crimeid = (UUID) getIntent()
@@ -86,10 +86,11 @@ public class PagerActivity extends FragmentActivity
 		}
 	}
 	
-	private void setUpEventListener()
+	private void setupPagerListener()
 	{
 		Log.d(TAG, "setUpEventListener()");
 		mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+			
 			// Invoked when a new page becomes selected.
 			@Override
 			public void onPageSelected(int position)
@@ -98,8 +99,10 @@ public class PagerActivity extends FragmentActivity
 
 				// Set the new page's crime title.
 				Crime crime = mCrimes.get(position);
+				
 				if (crime.getTitle() != null)
 				{
+					Log.d(TAG, "onPageSelected - setTitle(): " + crime.getTitle());
 					setTitle(crime.getTitle() );
 				}
 			}
@@ -147,7 +150,6 @@ public class PagerActivity extends FragmentActivity
 	@Override
 	public void onCrimeAdded(Crime crime)
 	{
-		// TODO Auto-generated method stub
-		
+		// Required but not used in this implementation.
 	}
 }

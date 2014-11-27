@@ -35,20 +35,23 @@ public class CrimeListActivity extends SingleFragmentActivity
 	@Override
 	public void onCrimeSelected(Crime crime)
 	{
-		if (Utils.hasTwoPane(this)) // Tablet
+		if (Utils.hasTwoPane(this)) // sw600-land
 		{
 			FragmentManager fm = getSupportFragmentManager();
 			FragmentTransaction ft = fm.beginTransaction();
 			
 			Fragment oldDetail = fm.findFragmentById(R.id.detailFragmentContainer);
-			Fragment newDetail = CrimeFragment.newInstance(crime.getId());
 			
 			if (oldDetail != null)
 			{
 				ft.remove(oldDetail);
 			}
 			
-			ft.add(R.id.detailFragmentContainer, newDetail);
+			if (crime != null)
+			{
+				Fragment newDetail = CrimeFragment.newInstance(crime.getId());
+				ft.add(R.id.detailFragmentContainer, newDetail);
+			}
 			ft.commit();
 		}
 		else // Phone
