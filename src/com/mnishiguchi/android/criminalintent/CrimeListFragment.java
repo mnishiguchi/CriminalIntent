@@ -47,8 +47,10 @@ import android.widget.Toast;
 	// The state of the Action Bar's subtitle.
 	private boolean mSubtitleVisible;
 	
+	// Remember the currently selected item.
 	private int mPositionSelected;
 	
+	// Reference to the activity registered for callbacks.
 	private ListCallbacks mCallbacks;
 	
 	/**
@@ -318,7 +320,7 @@ import android.widget.Toast;
 		// Get the selected item.
 		Crime crime = ( (CrimeAdapter) getListAdapter() ).getItem(position);
 		
-		// keep the selected position
+		// Remember the selected position
 		mPositionSelected = position;
 		
 		// Update the action bar title.

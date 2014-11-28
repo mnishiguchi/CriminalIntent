@@ -196,53 +196,47 @@ public class PictureUtils
 			
 		// Clear the reference to the image's pixel data.
 		BitmapDrawable bitmap = (BitmapDrawable)imageView.getDrawable();
-		bitmap.getBitmap().recycle(); 
+		if (bitmap.getBitmap() != null)
+		{
+			bitmap.getBitmap().recycle(); 
+		}
 		
 		// Clear the imageView.
 		imageView.setImageDrawable(null);
 	}
-	
-	/**
-	 * Save an image data at:
-	 * a private file associated with this Context's application package.
-	 */
-	public static boolean savePictureInternal(Context context, byte[] data, String filename)
-	{
-		// Save the jpeg data to disk.
-		FileOutputStream out = null;
-		try
-		{
-			out = context.openFileOutput(filename, Context.MODE_PRIVATE);
-			out.write(data);
-			out.close();
-		}
-		catch (Exception e)
-		{
-			Log.e(TAG, "Error closing file: " + filename, e);	
-			return false;
-		}
-		return true;
-	}
 
+	/**
+	 * Standardize on the storage location for pictures.
+	 * @param context
+	 * @param filename
+	 * @return
+	 */
+	public static File createPictureStorageFile(Context context, String filename)
+	{
+		// context.openFileOutput(filename, Context.MODE_PRIVATE); // Internal Private
+		
+		// Ensure that the external storage is available.
+		if (! Environment. getExternalStorageState (). equals (Environment .MEDIA_MOUNTED ))
+		{
+			Log.e(TAG, "External Storage is not available." );
+			return null;
+		}
+		
+		File path = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES); // external private
+		return new File(path, filename);
+	}
+	
 	/**
 	 * Save an image data at:
 	 * /storage/sdcard0/Android/data/package/files/Pictures
 	 */
 	public static boolean savePictureExternalPrivate(Context context, byte[] data, String filename)
 	{
-		// Ensure that the external storage is available.
-		if (! Environment. getExternalStorageState (). equals (Environment .MEDIA_MOUNTED ))
-		{
-			Log.e(TAG, "External Storage is not available." );
-			return false;
-		}
-
 		// Save the jpeg data to disk.
 		BufferedOutputStream out = null;
 		try
 		{
-			File path = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-			File file = new File(path, filename);
+			File file = createPictureStorageFile(context, filename);
 			out = new BufferedOutputStream(new FileOutputStream(file));
 			out.write(data);
 			out.close();
