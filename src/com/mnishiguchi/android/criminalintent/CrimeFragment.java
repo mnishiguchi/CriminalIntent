@@ -18,6 +18,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
+import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Camera;
 import android.net.Uri;
@@ -272,6 +273,11 @@ public class CrimeFragment extends Fragment
 				
 				// Get the absolute path for this crime's photo.
 				String path = photo.getAbsolutePath(getActivity());
+				if (null == path)
+				{
+					Log.e(TAG, "Couldn't get this photo's filepath");
+					return;
+				}
 				
 				// Get the orientation of this crime's photo.
 				int orientation = photo.getOrientation();
@@ -482,13 +488,20 @@ public class CrimeFragment extends Fragment
 		Photo photo = mCrime.getPhoto();
 		BitmapDrawable bitmap = photo.loadBitmapDrawable(getActivity());
 		
-		// Check the orientation. If necessary, change the bitmap orientation.
-		int orientation = Orientation.get(getActivity()).mode;
-		
-		if (orientation == Orientation.PORTRAIT_INVERTED ||
-				orientation == Orientation.PORTRAIT_NORMAL)
+		if (bitmap != null)
 		{
-			bitmap = PictureUtils.getPortraitDrawable(mPhotoView, bitmap);
+			// Check the orientation. If necessary, change the bitmap orientation.
+			int orientation = Orientation.get(getActivity()).mode;
+			if (orientation == Orientation.PORTRAIT_INVERTED ||
+					orientation == Orientation.PORTRAIT_NORMAL)
+			{
+				bitmap = PictureUtils.getPortraitDrawable(mPhotoView, bitmap);
+				
+			}
+			else if (orientation == Orientation.NO_DATA)
+			{
+				// Do nothing.
+			}
 		}
 
 		// Set the image on the ImageView.
@@ -624,7 +637,7 @@ public class CrimeFragment extends Fragment
 
 			if (photoUri != null)
 			{
-				int orientation = -1; // temp
+				int orientation = Orientation.NO_DATA; // Use EXIF instead.
 				
 				Photo photo = new Photo(mPhotoFilename, orientation);
 				mCrime.setPhoto(photo);

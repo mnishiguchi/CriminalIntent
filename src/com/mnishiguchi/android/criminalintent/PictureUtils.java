@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.UUID;
 
 import android.app.Activity;
 import android.content.Context;
@@ -19,6 +18,7 @@ import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.ExifInterface;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Environment;
@@ -37,7 +37,26 @@ public class PictureUtils
 	private static final String TAG = "CriminalIntent.PictureUtils";
 	
 	/**
+	 * Standardize on the storage location for pictures for this application.
+	 */
+	public static File getPictureStorageDir(Context context)
+	{
+		// context.openFileOutput(filename, Context.MODE_PRIVATE); // Internal Private
+		// Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+		
+		// Ensure that the external storage is available.
+		if (! Environment. getExternalStorageState ().equals (Environment .MEDIA_MOUNTED ))
+		{
+			Log.e(TAG, "External Storage is not available." );
+			return null;
+		}
+		
+		return context.getExternalFilesDir(Environment.DIRECTORY_PICTURES); // external private
+	}
+	
+	/**
 	 * Get a BitmapDrawable from a local file that is scaled down to fit the current Window size.
+	 * Adjust the orientation based on the EXIF data.
 	 */
 	public static BitmapDrawable getScaledDrawable(Activity activity, String path)
 	{
@@ -53,6 +72,7 @@ public class PictureUtils
 	
 	/**
 	 * Get a BitmapDrawable from a local file that is scaled down to the specified size.
+	 * Adjust the orientation based on the EXIF data.
 	 */
 	public static BitmapDrawable getScaledDrawable(Activity activity, String path, float destWidth, float destHeight)
 	{
@@ -60,7 +80,7 @@ public class PictureUtils
 		BitmapFactory.Options options = new BitmapFactory.Options();
 		options.inJustDecodeBounds = true; // No pixel data needed.
 		BitmapFactory.decodeFile(path, options); 
-		
+	
 		float srcWidth = options.outWidth;
 		float srcHeight = options.outHeight;
 		
@@ -88,14 +108,23 @@ public class PictureUtils
 		
 		// Scale down the bitmap data based on the inSampleSize.
 		Bitmap bitmap = BitmapFactory.decodeFile(path, options);
+		if (null == bitmap) return null; // Null check.
 		
-		// Create drawable from the scaled bitmap.
-		return new BitmapDrawable(activity.getResources(), bitmap);
+		// Get the rotation data.
+		Matrix matrix = readEXIF(path);
+
+		// Rotate the bitmap.
+		Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0,
+				bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+		
+		// Return a new drawable.
+		return new BitmapDrawable(activity.getResources(), rotatedBitmap);
 	}
 	
 	/**
 	 * Get an image data as byte array and create a BitmapDrawable that is 
 	 * scaled it down to fit the current Window size.
+	 * The orientation is not considered.
 	 */
 	public static Bitmap getScaledBitmap(Activity activity, byte[] data)
 	{
@@ -140,23 +169,62 @@ public class PictureUtils
 		return BitmapFactory.decodeByteArray(data , 0, data.length, options);
 	}
 	
+	/**
+	 * Rotate the passed-in BitmapDrawable by 90 degrees.
+	 */
 	public static BitmapDrawable getPortraitDrawable(ImageView imageView, BitmapDrawable drawable)
 	{
 		// Matrix to rotate.
 		Matrix matrix = new Matrix();
 		matrix.postRotate(90);
 		
+		return rotateDrawable(imageView, drawable, matrix);
+	}
+	
+	/**
+	 * Rotate the passed-in BitmapDrawable based on the Matrix.
+	 */
+	public static BitmapDrawable rotateDrawable(ImageView imageView,
+			BitmapDrawable drawable, Matrix matrix)
+	{
 		// Original bitmap
 		Bitmap src = drawable.getBitmap();
 		
-		// Transform the bitmap based on the matrix.
-		Bitmap result = Bitmap.createBitmap(src, 0, 0,
+		Bitmap rotatedBitmap = Bitmap.createBitmap(src, 0, 0,
 				drawable.getIntrinsicWidth(), 
 				drawable.getIntrinsicHeight(),
 				matrix, true);
-		
-		// Create a new BitmapDrawable.
-		return new BitmapDrawable(imageView.getResources(), result);
+		return new BitmapDrawable(imageView.getResources(), rotatedBitmap);
+	}
+	
+	/**
+	 * Get the orientation data of an image file.
+	 */
+	static Matrix readEXIF(String filepath)
+	{
+		Matrix matrix = new Matrix();
+		try
+		{
+			ExifInterface exif = new ExifInterface(filepath);
+			int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 1);
+			if (orientation == 3)
+			{
+				matrix.postRotate(180);
+			}
+			else if (orientation == 6)
+			{
+				matrix.postRotate(90);
+			}
+			else if (orientation == 8)
+			{
+				matrix.postRotate(270);
+			}
+		}
+		catch (Exception ex)
+		{
+			Log.e(TAG, "error: ", ex);
+		}
+		return matrix;
 	}
 	
 	/**
@@ -209,12 +277,19 @@ public class PictureUtils
 		imageView.setImageDrawable(null);
 	}
 	
+	/**
+	 * 
+	 */
 	static String generateImageFileName(Context context)
 	{
 		String timeStamp = new SimpleDateFormat("yyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
 		return "IMG_"+ timeStamp + ".jpg";
 	}
 	
+	/**
+	 * Create a new image file at the directory that is standardized for this application.
+	 * The standard directory is defined in getPictureStorageDir(context) method.
+	 */
 	static File createImageFile(Context context, String filename)
 	{
 		File directory = getPictureStorageDir(context);
@@ -229,27 +304,6 @@ public class PictureUtils
 		}
 		
 		return new File(directory, filename);
-	}
-	
-	/**
-	 * Standardize on the storage location for pictures for this application.
-	 * @param context
-	 * @param filename
-	 * @return
-	 */
-	public static File getPictureStorageDir(Context context)
-	{
-		// context.openFileOutput(filename, Context.MODE_PRIVATE); // Internal Private
-		//  Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-		
-		// Ensure that the external storage is available.
-		if (! Environment. getExternalStorageState (). equals (Environment .MEDIA_MOUNTED ))
-		{
-			Log.e(TAG, "External Storage is not available." );
-			return null;
-		}
-		
-		return context.getExternalFilesDir(Environment.DIRECTORY_PICTURES); // external private
 	}
 	
 	/**

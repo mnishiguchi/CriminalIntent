@@ -13,6 +13,7 @@ import android.content.Context;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Environment;
 import android.util.Log;
+import android.widget.ImageView;
 
 /**
  * Creating a Photo class is useful when we need to display a caption or handling a touch event.
@@ -79,7 +80,11 @@ class Photo
 		//File dir = context.getApplicationContext()
 				//.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
 		File dir = PictureUtils.getPictureStorageDir(context);
+		if (null == dir) return null;
+		
 		File file = new File(dir, getFilename());
+		if (null == file) return null;
+		
 		return file.getAbsolutePath(); // Convert the filepath to string.
 	}
 	

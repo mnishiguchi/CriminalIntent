@@ -3,6 +3,7 @@ package com.mnishiguchi.android.criminalintent;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import android.widget.ImageView;
  */
 public class ImageFragment extends DialogFragment
 {
+	private static String TAG = "CriminalIntent.ImageFragment";
 	public static final String EXTRA_IMAGE_PATH = "com.mnishiguchi.android.criminalintent.image_path";
 	public static final String EXTRA_IMAGE_ORIENTATION = "com.mnishiguchi.android.criminalintent.image_orientation";
 	private ImageView mImageView;
@@ -48,11 +50,20 @@ public class ImageFragment extends DialogFragment
 		// Create a scaled bitmap image based on image data that is stored in disk. 
 		BitmapDrawable image = PictureUtils.getScaledDrawable(getActivity(), path);
 		
-		// Check the orientation. If necessary, change the bitmap orientation.
-		if (orientation == Orientation.PORTRAIT_INVERTED ||
-				orientation == Orientation.PORTRAIT_NORMAL)
+		if (image != null)
 		{
-			image = PictureUtils.getPortraitDrawable(mImageView, image);
+			// Check the orientation. If necessary, change the bitmap orientation.
+			if (orientation == Orientation.PORTRAIT_INVERTED ||
+					orientation == Orientation.PORTRAIT_NORMAL)
+			{
+				Log.d(TAG, "Orientation: PORTRAIT_INVERTED || PORTRAIT_NORMAL)");
+				image = PictureUtils.getPortraitDrawable(mImageView, image);
+			}
+			else if (orientation == Orientation.NO_DATA)
+			{
+				Log.d(TAG, "Orientation.NO_DATA");
+				//image = PictureUtils.getRotatedDrawableEXIF(getActivity(), path);
+			}
 		}
 		
 		// Set image on the ImageView.
