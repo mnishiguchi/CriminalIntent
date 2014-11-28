@@ -215,7 +215,7 @@ public class PictureUtils
 		return "IMG_"+ timeStamp + ".jpg";
 	}
 	
-	static File createImageFile(Context context, String filename) throws IOException
+	static File createImageFile(Context context, String filename)
 	{
 		File directory = getPictureStorageDir(context);
 		

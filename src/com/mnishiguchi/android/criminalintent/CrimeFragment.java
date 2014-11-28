@@ -528,33 +528,19 @@ public class CrimeFragment extends Fragment
 			// Create the File where the photo should go.
 			// If you don't do this, you may get a crash in some devices.
 			File photoFile = null;
-			try
-			{
-				// Create a file, where we save a photo.
-				mPhotoFilename = PictureUtils.generateImageFileName(getActivity());
-				photoFile = PictureUtils.createImageFile(getActivity(), mPhotoFilename);
-				
-				// Remember the filepath.
-				mPhotoFilepath = photoFile.getAbsolutePath();
-				Log.e(TAG, "After createImageFile(): " + mPhotoFilepath);
-				
-				if (photoFile.exists() && photoFile.isDirectory())
-				{
-					Log.e(TAG, "File already exists and is a directory");
-				}
-				Log.d(TAG, photoFile.toString());
-			}
-			catch (IOException e)
-			{
-				// Error occurred while creating the File
-				Log.e(TAG, "There was a problem creating the file: " + photoFile, e);
-			}
+			
+			// Create a file, where we save a photo.
+			mPhotoFilename = PictureUtils.generateImageFileName(getActivity());
+			photoFile = PictureUtils.createImageFile(getActivity(), mPhotoFilename);
+			
+			// Remember the filepath.
+			mPhotoFilepath = photoFile.getAbsolutePath();
+			Log.e(TAG, "After createImageFile(): " + mPhotoFilepath);
 			
 			// Continue only if the File was successfully created
 			if (photoFile != null)
 			{
 				mPhotoFileUri = Uri.fromFile(photoFile);
-
 				i.putExtra(MediaStore.EXTRA_OUTPUT, mPhotoFileUri);
 				startActivityForResult(i, REQUEST_DEFAULT_CAMERA);
 			}
