@@ -6,6 +6,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.UUID;
 
 import android.app.Activity;
 import android.content.Context;
@@ -204,16 +208,39 @@ public class PictureUtils
 		// Clear the imageView.
 		imageView.setImageDrawable(null);
 	}
-
+	
+	static String generateImageFileName(Context context)
+	{
+		String timeStamp = new SimpleDateFormat("yyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+		return "IMG_"+ timeStamp + ".jpg";
+	}
+	
+	static File createImageFile(Context context, String filename) throws IOException
+	{
+		File directory = getPictureStorageDir(context);
+		
+		if (!directory.exists())
+		{
+			if (!directory.mkdirs())
+			{
+				Log.e(TAG, "Failed to create storage directory.");
+				return null;
+			}
+		}
+		
+		return new File(directory, filename);
+	}
+	
 	/**
-	 * Standardize on the storage location for pictures.
+	 * Standardize on the storage location for pictures for this application.
 	 * @param context
 	 * @param filename
 	 * @return
 	 */
-	public static File createPictureStorageFile(Context context, String filename)
+	public static File getPictureStorageDir(Context context)
 	{
 		// context.openFileOutput(filename, Context.MODE_PRIVATE); // Internal Private
+		//  Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
 		
 		// Ensure that the external storage is available.
 		if (! Environment. getExternalStorageState (). equals (Environment .MEDIA_MOUNTED ))
@@ -222,21 +249,19 @@ public class PictureUtils
 			return null;
 		}
 		
-		File path = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES); // external private
-		return new File(path, filename);
+		return context.getExternalFilesDir(Environment.DIRECTORY_PICTURES); // external private
 	}
 	
 	/**
-	 * Save an image data at:
-	 * /storage/sdcard0/Android/data/package/files/Pictures
+	 * Save an image data as the specified file name inside the specified directory.
 	 */
-	public static boolean savePictureExternalPrivate(Context context, byte[] data, String filename)
+	public static boolean savePicture(Context context, byte[] data, File dir, String filename)
 	{
 		// Save the jpeg data to disk.
 		BufferedOutputStream out = null;
 		try
 		{
-			File file = createPictureStorageFile(context, filename);
+			File file = new File(dir, filename);
 			out = new BufferedOutputStream(new FileOutputStream(file));
 			out.write(data);
 			out.close();

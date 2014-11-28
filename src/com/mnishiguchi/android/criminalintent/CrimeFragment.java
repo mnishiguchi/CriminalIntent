@@ -1,5 +1,8 @@
 package com.mnishiguchi.android.criminalintent;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -21,6 +24,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.provider.MediaStore;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -61,6 +65,7 @@ public class CrimeFragment extends Fragment
 	
 	public static final int REQUEST_DATE = 0;
 	public static final int REQUEST_PHOTO = 1;
+	public static final int REQUEST_DEFAULT_CAMERA = 11;
 	public static final int REQUEST_CONTACT = 2;
 	
 	// Store reference to an instance of this fragment that is currently working..
@@ -80,6 +85,12 @@ public class CrimeFragment extends Fragment
 	// Reference to CAB.
 	private ActionMode mActionMode;
 	
+	// Default camera
+	private Uri mPhotoFileUri;
+	private String mPhotoFilepath;
+	private String mPhotoFilename;
+	
+	// Remember reference to callback-registered activities.
 	private DetailCallbacks mCallbacks;
 	
 	/**
@@ -347,9 +358,11 @@ public class CrimeFragment extends Fragment
 			@Override
 			public void onClick(View v)
 			{
+				startDefaultCamera();
+				
 				// Start the camera, requesting the photo's filename, if one taken.
-				Intent i = new Intent(getActivity(), CrimeCameraActivity.class);
-				startActivityForResult(i, REQUEST_PHOTO);
+				//Intent i = new Intent(getActivity(), CrimeCameraActivity.class);
+				//startActivityForResult(i, REQUEST_PHOTO);
 			}
 		});
 		
@@ -504,6 +517,50 @@ public class CrimeFragment extends Fragment
 		PictureUtils.cleanImageView(mPhotoView);
 	}
 	
+	private void startDefaultCamera()
+	{
+		// Camera exists? Then proceed...
+		Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+		// Ensure that there's a camera activity to handle the intent
+		if (Utils.isIntentSafe(getActivity(), i))
+		{
+			// Create the File where the photo should go.
+			// If you don't do this, you may get a crash in some devices.
+			File photoFile = null;
+			try
+			{
+				// Create a file, where we save a photo.
+				mPhotoFilename = PictureUtils.generateImageFileName(getActivity());
+				photoFile = PictureUtils.createImageFile(getActivity(), mPhotoFilename);
+				
+				// Remember the filepath.
+				mPhotoFilepath = photoFile.getAbsolutePath();
+				Log.e(TAG, "After createImageFile(): " + mPhotoFilepath);
+				
+				if (photoFile.exists() && photoFile.isDirectory())
+				{
+					Log.e(TAG, "File already exists and is a directory");
+				}
+				Log.d(TAG, photoFile.toString());
+			}
+			catch (IOException e)
+			{
+				// Error occurred while creating the File
+				Log.e(TAG, "There was a problem creating the file: " + photoFile, e);
+			}
+			
+			// Continue only if the File was successfully created
+			if (photoFile != null)
+			{
+				mPhotoFileUri = Uri.fromFile(photoFile);
+
+				i.putExtra(MediaStore.EXTRA_OUTPUT, mPhotoFileUri);
+				startActivityForResult(i, REQUEST_DEFAULT_CAMERA);
+			}
+		}
+	}
+	
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent resultData)
 	{
@@ -524,7 +581,7 @@ public class CrimeFragment extends Fragment
 			showUpdatedDate();
 		}
 		
-		// --- Retrieve filename of the photo just taken ---
+		// --- Custom Camera ---
 		
 		else if (requestCode == REQUEST_PHOTO)
 		{
@@ -550,6 +607,55 @@ public class CrimeFragment extends Fragment
 				mCallbacks.onCrimeUpdated(mCrime);
 				
 				showThumbnail();
+			}
+		}
+		
+		// --- Built-in Camera ---
+		
+		else if (requestCode == REQUEST_DEFAULT_CAMERA)
+		{
+			Log.d(TAG, "After camera activity, mPhotoPath: " + mPhotoFilepath);
+			
+			// Delete the old photo, if any.
+			if (mCrime.getPhoto() != null)
+			{
+				deletePhoto();
+			}
+
+			Uri photoUri = null;
+
+			if (null == resultData)
+			{
+				// A known bug here! The image should have saved in fileUri
+				showToast("Image saved successfully");
+				photoUri  = mPhotoFileUri;
+			}
+			else
+			{
+				photoUri  = resultData.getData();
+				showToast("Image saved successfully in: " + resultData.getData());
+			}
+
+			if (photoUri != null)
+			{
+				int orientation = -1; // temp
+				
+				Photo photo = new Photo(mPhotoFilename, orientation);
+				mCrime.setPhoto(photo);
+				Log.d(TAG, "photo.getFilename(): " + photo.getFilename());
+				
+				// Notify it.
+				mCallbacks.onCrimeUpdated(mCrime);
+				
+				// Set the photo on the imageView.
+				showThumbnail();
+				
+				// Forget the filepath.
+				mPhotoFilepath = null;
+			}
+			else
+			{
+				Toast.makeText(getActivity(), "Error saving photo: " + mPhotoFilepath, Toast.LENGTH_LONG).show();
 			}
 		}
 		
@@ -587,20 +693,6 @@ public class CrimeFragment extends Fragment
 			
 			cursor.close();
 		}
-	}
-	
-	/**
-	 * This is to check how many activities can respond to the passed-in intent.
-	 * Run this check in onCreateView() to disable options that the device will not be able to respond to.
-	 * If the OS cannot find a matching activity, then the app will crash.
-	 * An Android device is guaranteed to have an email app and a contacts app of one kind or another.
-	 */
-	@SuppressWarnings("unused")
-	private boolean isIntentSafe(Intent i)
-	{
-		PackageManager pm = getActivity().getPackageManager();
-		List<ResolveInfo> activities = pm.queryIntentActivities(i, 0);
-		return (activities.size() > 0);
 	}
 	
 	/**

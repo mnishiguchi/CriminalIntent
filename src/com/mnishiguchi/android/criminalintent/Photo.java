@@ -76,8 +76,9 @@ class Photo
 	 */
 	String getAbsolutePath(Context context)
 	{
-		File dir = context.getApplicationContext()
-				.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+		//File dir = context.getApplicationContext()
+				//.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+		File dir = PictureUtils.getPictureStorageDir(context);
 		File file = new File(dir, getFilename());
 		return file.getAbsolutePath(); // Convert the filepath to string.
 	}

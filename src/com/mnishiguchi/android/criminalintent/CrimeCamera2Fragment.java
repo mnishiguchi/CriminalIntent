@@ -1,5 +1,6 @@
 package com.mnishiguchi.android.criminalintent;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -99,7 +100,8 @@ public class CrimeCamera2Fragment  extends Fragment
 								bitmap = PictureUtils.compressBitmap(bitmap);
 								
 								// Save the picture on disk.
-								boolean success = PictureUtils.savePictureExternalPrivate(getActivity(), data, filename);
+								File dir = PictureUtils.getPictureStorageDir(getActivity());
+								boolean success = PictureUtils.savePicture(getActivity(), data, dir,  filename);
 								
 								if (success) // Successfully saved.
 								{
